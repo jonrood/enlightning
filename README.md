@@ -10,6 +10,6 @@ Enlightning relies upon the [zlib](http://www.zlib.net/)(v1.2.8), [HDF5](http://
 
 
 ## Example Simulation of a Mach Reflection
-Output from example problem in `input.txt`:
+Output from example problem in [input.txt](input.txt):
 ![Screenshot](media/mach_stem1.png)
 ![Screenshot](media/mach_stem2.png)

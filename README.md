@@ -10,4 +10,5 @@ Enlightning relies upon the [zlib](http://www.zlib.net/), [HDF5](http://www.hdfg
 
 
 ## Example Output
-![Screenshot](https://raw.github.com/jonrood/enlightning/master/media/mach_stem_amr.png)
+![Screenshot](https://raw.github.com/jonrood/enlightning/master/media/mach_stem1.png)
+![Screenshot](https://raw.github.com/jonrood/enlightning/master/media/mach_stem2.png)

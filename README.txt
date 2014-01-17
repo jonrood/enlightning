@@ -52,3 +52,10 @@ opencl/
 	main.cpp - Main program for OpenCL based prototype of the program.
 	kernel.cl - Kernel for calculating the RHS.
 	makefile - Makefile for compiling on OSX using Xcode on the command line.
+
+media/
+	mach_stem.mov - Movie showing an example mach stem formation.
+	mach_stem_amr.mov - Movie showing mach stem with AMR levels and patches shown.
+	mach_stem1.png - Screenshot of mach stem formation.
+	mach_stem2.png - Zoomed in capture of AMR mesh.
+	lightning_strike.png - Example of a lightning channel simulation.

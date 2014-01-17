@@ -1,8 +1,8 @@
 Enlightning {
    cfl                 = 0.125                          // CFL number.
    specific_dt         = 0 //8.6e-6                     // Bypass CFL with specific dt, 0 to disable.
-   tag_tolerance       = 1.5 , 1e-2 , 1e-2              // Initial source tolerance, density tolerance.
-   max_timesteps       = 1000                          // Maximum number of time steps.
+   tag_tolerance       = 1.5 , 1e-2 , 5e-3              // Source tolerance, density tolerance, hybrid tolerance. First two are for AMR tagging, third is for tagging base grid cells to use WENO scheme.
+   max_timesteps       = 10000                          // Maximum number of time steps.
    end_time            = 2e-3                           // Simulation end time.
    regrid_step         = 2                              // Check to regrid after this number of steps.
    tag_buffer          = 2                              // Tag this number of cells surrounding a tagged cell.

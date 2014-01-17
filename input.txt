@@ -1,0 +1,164 @@
+Enlightning {
+   cfl                 = 0.125                          // CFL number.
+   specific_dt         = 0 //8.6e-6                     // Bypass CFL with specific dt, 0 to disable.
+   tag_tolerance       = 1.5 , 1e-2 , 1e-2              // Initial source tolerance, density tolerance.
+   max_timesteps       = 1000                          // Maximum number of time steps.
+   end_time            = 2e-3                           // Simulation end time.
+   regrid_step         = 2                              // Check to regrid after this number of steps.
+   tag_buffer          = 2                              // Tag this number of cells surrounding a tagged cell.
+   viz_pressure        = 1                              // Whether to output pressure plots.
+   viz_source          = 0                              // Whether to output source plots.
+   viz_temperature     = 0                              // Whether to output temperature plots.
+   viz_w_n             = 0                              // Whether to output w_n plots.
+   boundary {
+      bc_type_L        = "ABSORB"                       // ABSORB or REFLECT.
+      bc_type_R        = "ABSORB"                       // ABSORB or REFLECT.
+      bc_type_B        = "REFLECT"                      // ABSORB or REFLECT.
+      bc_type_T        = "ABSORB"                       // ABSORB or REFLECT.
+      bc_absorb_width  = 1e-2                           // Width of absorbing envelope.
+   }
+   recording {
+      record_audio     = 1                              // Whether to record audio.
+      num_mics         = 1                              // Number of requested microphones.
+      mic_pos_x        = 0.7                            // Array of x-axis locations for microphones.
+      mic_pos_y        = 0.1                            // Array of y-axis locations for microphones.
+      use_sample_rate_dt = 0                            // Use 1/wav_sample_rate as dt. Supersedes specific_dt and CFL.
+      wav_sample_rate  = 22050                          // Sample rate to use for wave files and dt.
+   }
+   src_data {
+      src_type         = "POINT"                        // POINT or SINE or LIGHTNING.
+      src_mode         = "PULSE"                        // PULSE or DRIVEN.
+      src_omega        = 1000                           // Frequency of driven source.
+      src_amp          = 5.e5                           // Amplitude of source.
+      src_spread       = 0.01                           // Width of source.
+      src_pos          = 0.2 , 0.2                      // Position of source.
+      src_sine_amp     = 1.0                            // Amplitude of sine shape.
+      src_sine_freq    = 1.0                            // Frequency of sine shape.
+      src_num_pulses   = 1                              // Number of source pulses.
+      src_pulse_times  = 3                              // Array of timesteps in which to insert source.
+   }
+   constants {
+      weno_alpha       = 360                            // Alpha for flux-splitting.
+      c                = 343                            // Speed of sound in m/s.
+      gamma1           = 1.402                          // Gamma constant.
+      p0               = 101325                         // Ambient pressure in Pascals.
+      RH               = 20                             // Relative humidity percentage.
+      T0               = 293.16                         // Ambient temperature in Kelvin.
+      c_lr             = 0 //-3.9e-3                    // Speed of sound lapse rate.
+      rho0             = 1.21                           // Ambient density.
+      R                = 287.06                         // R.
+      c_p              = 1010                           // c_p.
+      T_star_n         = 3352                           // T_star_n.
+      T_star_o         = 2239                           // T_star_o.
+      mu               = 1.846e-5                       // mu.
+      muB              = 1.1076e-5                      // muB.
+      kappa            = 0.02624                        // kappa.
+      c_v              = 720.4                          // c_v.
+      R_tilde          = 8314.32                        // R_tilde.
+      M                = 28.9644                        // M.
+   }
+}
+
+Main {
+   base_name           = "enlightning"                  // Base simulation name.
+   log_all_nodes       = FALSE                          // Whether to output logs for all nodes.
+   viz_writer          = "VisIt"                        // VisIt used for viewing hdf5 files.
+   viz_dump_interval   = 100                            // Interval to output visualization. Zero to turn off.
+   viz_dump_dirname    = "enlightning.viz"              // Directory for visualization output.
+   visit_number_procs_per_file = 1                      // 
+   log_filename        = "enlightning_log.txt"          // Name of log file.
+   restart_interval    = 0                              // Interval to output checkpoint data. Zero to turn off.
+   load_balancer       = "caplb"                        // Load balancer type: tlb (Tree) or caplb (Chop and Pack).
+}
+
+TimerManager{
+   print_exclusive     = TRUE
+   print_user          = TRUE
+   print_sys           = TRUE
+   print_processor     = TRUE
+   print_threshold     = 1.0
+   print_total         = TRUE
+   print_max           = TRUE
+   print_summed        = TRUE
+   print_wall          = TRUE
+   print_percentage    = TRUE
+   print_concurrent    = TRUE
+   print_timer_overhead = FALSE
+   timer_list          = "apps::main::*",
+                         "apps::enlightning::*",
+                         "algs::GriddingAlgorithm::*",
+                         "algs::MethodOfLinesIntegrator::*",
+                         //"tbox::SAMRAI_MPI::*",
+                         //"tbox::Transaction::*",
+                         "tbox::Schedule::*"
+}
+
+CartesianGeometry{
+   domain_boxes        = [(0,0) , (200,100)]             // Number of base grid cells.
+   x_lo                = 0.0 , 0.0                       // Lower end of computational domain.
+   x_up                = 1.0 , 0.5                       // Upper end of computational domain.
+   //periodic_dimension  = 0 , 1                         // Periodic boundaries possible.
+}
+
+StandardTagAndInitialize {
+   tagging_method      = "GRADIENT_DETECTOR"
+}
+
+PatchHierarchy {
+   max_levels          = 3                               // Maximum number of levels in hierarchy.
+   ratio_to_coarser {                                    // Vector ratio to next coarser level.
+      level_1          = 4 , 4
+      level_2          = 2 , 2
+      level_3          = 2 , 2
+   }
+   largest_patch_size {
+      level_0          = 64 , 64
+      level_1          = 128 , 128
+      level_1          = 128 , 128
+   }
+   smallest_patch_size {
+      level_0          = 16 , 16
+   }
+}
+
+GriddingAlgorithm{
+   efficiency_tolerance = 0.70                           // Min % of tag cells in new patch level
+   combine_efficiency   = 0.80                           // chop box if sum of volumes of smaller
+                                                         // boxes < efficiency * vol of large box.
+}
+
+MethodOfLinesIntegrator{
+   //order              = 3                              // Values to use for Runge Kutta.
+   //alpha_1            = 1 , 0.75 , 0.3333333333
+   //alpha_2            = 0 , 0.25 , 0.6666666667
+   //beta               = 1 , 0.25 , 0.6666666667
+
+   order              = 2
+   alpha_1            = 1 , 0.5
+   alpha_2            = 0 , 0.5
+   beta               = 1 , 0.5
+}
+
+TreeLoadBalancer {
+  report_load_balance = TRUE                             // Tree load balancer options.
+  n_root_cycles = -1
+  balance_penalty_wt = 1.0
+  surface_penalty_wt = 1.0
+  slender_penalty_wt = 1.0
+  precut_penalty_wt = 1.0
+
+  // Debugging options
+  check_map = 'n'
+  check_connectivity = 'n'
+  print_steps = 'y'
+  print_swap_steps = 'n'
+  print_break_steps = 'n'
+  print_edge_steps = 'n'
+}
+
+ChopLoadBalancer {
+  processor_layout = 1 , 8                                // Chop and pack load balancer options.
+  //bin_pack = "SPATIAL"
+  //max_workload_factor = 0.9
+  //ignore_level_box_union_is_single_box = FALSE
+}

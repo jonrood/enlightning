@@ -404,57 +404,57 @@ function K=rhs(X,Y,dx,dy,muB,mu,...
 end
 
 function vp=wenoP(fgm2,fgm1,fg0,fgp1,fgp2)
-	ep=10e-6;
-	
-	beta0=(13/12)*(fg0-2*fgp1+fgp2)^2+...
-        (1/4)*(3*fg0-4*fgp1+fgp2)^2;
-	beta1=(13/12)*(fgm1-2*fg0+fgp1)^2+...
-        (1/4)*(fgm1-fgp1)^2;
-	beta2=(13/12)*(fgm2-2*fgm1+fg0)^2+...
-        (1/4)*(fgm2-4*fgm1+3*fg0)^2;
-	
-	zeta0=0.1/((ep+beta0)^2);
-	zeta1=0.6/((ep+beta1)^2);
-	zeta2=0.3/((ep+beta2)^2);
-	
-	sigma=zeta0+zeta1+zeta2;
-	
-	omega0=zeta0/sigma;
-	omega1=zeta1/sigma;
-	omega2=zeta2/sigma;
+    ep=10e-6;
     
-    f0=(1/6)*(11*fg0-7*fgp1+2*fgp2);
-	f1=(1/6)*(2*fgm1+5*fg0-fgp1);
-	f2=(1/6)*(-fgm2+5*fgm1+2*fg0);
-	
-	vp=omega0*f0+omega1*f1+omega2*f2;
-end
-
-function vm=wenoM(fgm2,fgm1,fg0,fgp1,fgp2)
-	ep=10e-6;
-	
     beta0=(13/12)*(fg0-2*fgp1+fgp2)^2+...
         (1/4)*(3*fg0-4*fgp1+fgp2)^2;
     beta1=(13/12)*(fgm1-2*fg0+fgp1)^2+...
         (1/4)*(fgm1-fgp1)^2;
     beta2=(13/12)*(fgm2-2*fgm1+fg0)^2+...
         (1/4)*(fgm2-4*fgm1+3*fg0)^2;
-	
-	zeta0=0.3/((ep+beta0)^2);
-	zeta1=0.6/((ep+beta1)^2);
-	zeta2=0.1/((ep+beta2)^2);
-	
-	sigma=zeta0+zeta1+zeta2;
-	
-	omega0=zeta0/sigma;
-	omega1=zeta1/sigma;
-	omega2=zeta2/sigma;
+    
+    zeta0=0.1/((ep+beta0)^2);
+    zeta1=0.6/((ep+beta1)^2);
+    zeta2=0.3/((ep+beta2)^2);
+    
+    sigma=zeta0+zeta1+zeta2;
+    
+    omega0=zeta0/sigma;
+    omega1=zeta1/sigma;
+    omega2=zeta2/sigma;
+    
+    f0=(1/6)*(11*fg0-7*fgp1+2*fgp2);
+    f1=(1/6)*(2*fgm1+5*fg0-fgp1);
+    f2=(1/6)*(-fgm2+5*fgm1+2*fg0);
+    
+    vp=omega0*f0+omega1*f1+omega2*f2;
+end
+
+function vm=wenoM(fgm2,fgm1,fg0,fgp1,fgp2)
+    ep=10e-6;
+    
+    beta0=(13/12)*(fg0-2*fgp1+fgp2)^2+...
+        (1/4)*(3*fg0-4*fgp1+fgp2)^2;
+    beta1=(13/12)*(fgm1-2*fg0+fgp1)^2+...
+        (1/4)*(fgm1-fgp1)^2;
+    beta2=(13/12)*(fgm2-2*fgm1+fg0)^2+...
+        (1/4)*(fgm2-4*fgm1+3*fg0)^2;
+    
+    zeta0=0.3/((ep+beta0)^2);
+    zeta1=0.6/((ep+beta1)^2);
+    zeta2=0.1/((ep+beta2)^2);
+    
+    sigma=zeta0+zeta1+zeta2;
+    
+    omega0=zeta0/sigma;
+    omega1=zeta1/sigma;
+    omega2=zeta2/sigma;
     
     f0=(1/6)*(2*fg0+5*fgp1-fgp2);
     f1=(1/6)*(-fgm1+5*fg0+2*fgp1);
     f2=(1/6)*(2*fgm2-7*fgm1+11*fg0);
-	
-	vm=omega0*f0+omega1*f1+omega2*f2;
+    
+    vm=omega0*f0+omega1*f1+omega2*f2;
 end
 
 function updateState(p0,T0,rho0,R,c_v,c_p,mygamma,c)

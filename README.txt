@@ -2,7 +2,7 @@ Enlightning is a program which uses the SAMRAI adaptive mesh refinement library 
 
 Files:
 
-LICENSE - GPL license information.
+LICENSE.txt - GPL license information.
 enlightning.C - Implementations of SAMRAI routines.
 enlightning.h - Header accompanying enlightning.C.
 enlightningFort.h - Header for interface to the program functions that were written in Fortran.

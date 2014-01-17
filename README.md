@@ -9,6 +9,7 @@ Refer to `README.txt` and `INSTALL.txt` for notes and instructions on installati
 Enlightning relies upon the [zlib](http://www.zlib.net/), [HDF5](http://www.hdfgroup.org/HDF5/), MPI ([Open MPI](http://www.open-mpi.org) or [MPICH](http://www.mpich.org)), and [SAMRAI](https://computation-rnd.llnl.gov/SAMRAI/) software libraries.
 
 
-## Example Output
+## Example Simulation of a Mach Reflection
+Output from example problem in `input.txt`:
 ![Screenshot](https://raw.github.com/jonrood/enlightning/master/media/mach_stem1.png)
 ![Screenshot](https://raw.github.com/jonrood/enlightning/master/media/mach_stem2.png)

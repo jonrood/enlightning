@@ -881,7 +881,8 @@ void enlightning::setPhysicalBoundaryConditions(hier::Patch& patch,
         }
     }
     
-    // Handle corners, I think.
+    // I am not certain at the moment why I needed this section.
+    // I will need to investigate it to give a more appropriate comment.
     const tbox::Array<hier::BoundaryBox> node_bdry = patch_geom->getNodeBoundaries();
     for (int r = 0; r < node_bdry.getSize(); r++) {
         int bdry_loc = node_bdry[r].getLocationIndex();

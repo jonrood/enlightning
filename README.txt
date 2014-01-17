@@ -44,9 +44,9 @@ fortran/
 	update_state.m4 - This function updates the pressure and temperature state variables.
 
 matlab/
-	LightningChannel.m - Matlab program for generating lightning channel geometries.
-	hybrid.m - Matlab program that is a prototype of the hybrid method solver.
-	DrawSource.m - Matlab program that is a prototype for drawing source segments on a grid.
+	LightningChannel.m - Matlab program for generating lightning channel geometries. Try running with “LightningChannel(2000,2000,250,2000,700,2,16,1,1,20,0.006,8,4);” for example.
+	hybrid.m - Matlab program that is a prototype of the hybrid method solver. Try running with “hybrid(400,51,51,26,26,1e5,1,1000,10,0.1,1,0.001);” for example.
+	DrawSource.m - Matlab program that is a prototype for drawing source segments on a grid. Try running with “DrawSource(1000,1000,2000,2000,6,1);” for example.
 
 opencl/
 	main.cpp - Main program for OpenCL based prototype of the program.
@@ -59,3 +59,6 @@ media/
 	mach_stem1.png - Screenshot of mach stem formation.
 	mach_stem2.png - Zoomed in capture of AMR mesh.
 	lightning_strike.png - Example of a lightning channel simulation.
+
+paper/
+	jr_dissertation - Dissertation detailing the simulation.

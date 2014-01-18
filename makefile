@@ -1,4 +1,4 @@
-SAMRAI        = /Users/jon/test/SAMRAI-v3.1.0-beta
+SAMRAI        = /Users/someuser/SAMRAI-v3.1.0-beta
 SRCDIR        = .
 SUBDIR        = .
 OBJECT        = $(SAMRAI)

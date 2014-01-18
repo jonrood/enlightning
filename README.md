@@ -4,10 +4,11 @@ Simulation software for numerically solving the Navier-Stokes equations using a 
 
 ## Notes
 
-Refer to [README.txt](README.txt) and [INSTALL.txt](INSTALL.txt) for notes and instructions on installation. Also refer to the [paper](paper/jr_dissertation) on the simulation, the [Matlab prototype](matlab/hybrid.m) of the model and the [OpenCL prototype](opencl/main.c) of the model in the project directory.
+Refer to [README.txt](README.txt) and [INSTALL.txt](INSTALL.txt) for notes and instructions on installation. Also refer to the [paper](paper/jr_dissertation.pdf) on the simulation, the [Matlab prototype](matlab/hybrid.m) of the model and the [OpenCL prototype](opencl/main.c) of the model in the project directory.
 
 Enlightning relies upon the [zlib](http://www.zlib.net/)(v1.2.8), [HDF5](http://www.hdfgroup.org/HDF5/)(v1.8.7), MPI ([Open MPI](http://www.open-mpi.org)(v1.7.3) or [MPICH](http://www.mpich.org)), and [SAMRAI](https://computation-rnd.llnl.gov/SAMRAI/)(v3.1.0) software libraries.
 
+Use [VisIt](https://wci.llnl.gov/codes/visit/) for plotting the HDF5 output.
 
 ## Example Simulation of a Mach Reflection
 Output from example problem in [input.txt](input.txt):

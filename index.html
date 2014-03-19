@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Enlightning by jonrood</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Enlightning</h1>
+        <h2>Software for numerically solving the Navier-Stokes equations and simulating atmospheric shockwaves using a hybrid WENO/DRP scheme and adaptive mesh refinement (AMR). Specifically tailored to numerically simulating the acoustical propagation of thunder, but also useful for general nonlinear acoustics simulation.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/jonrood/enlightning/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/jonrood/enlightning/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/jonrood/enlightning" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a name="enlightning" class="anchor" href="#enlightning"><span class="octicon octicon-link"></span></a>Enlightning</h1>
+
+<p>Simulation software for numerically solving the Navier-Stokes equations using a Runge-Kutta method for the time derivative and a hybrid WENO and DRP finite difference scheme for the space derivative. This software was specifically developed to simulate the numerical acoustical propagation of thunder using the SAMRAI adaptive mesh refinement (AMR) library developed by Lawrence Livermore National Laboratory. Although it had a specific purpose for my research, it can also be used for simulating general nonlinear acoustics problems using very efficient AMR techniques and runs on top of MPI, making it very scalable to massively parallel machines.</p>
+
+<h2>
+<a name="notes" class="anchor" href="#notes"><span class="octicon octicon-link"></span></a>Notes</h2>
+
+<p>Refer to <a href="README.txt">README.txt</a> and <a href="INSTALL.txt">INSTALL.txt</a> for notes and instructions on installation. Also refer to the <a href="paper/jr_dissertation.pdf">paper</a> on the simulation, the <a href="matlab/hybrid.m">Matlab prototype</a> of the model and the <a href="opencl/main.c">OpenCL prototype</a> of the model in the project directory.</p>
+
+<p>Enlightning relies upon the <a href="http://www.zlib.net/">zlib</a>(v1.2.8), <a href="http://www.hdfgroup.org/HDF5/">HDF5</a>(v1.8.7), MPI (<a href="http://www.open-mpi.org">Open MPI</a>(v1.7.3) or <a href="http://www.mpich.org">MPICH</a>), and <a href="https://computation-rnd.llnl.gov/SAMRAI/">SAMRAI</a>(v3.1.0) software libraries.</p>
+
+<p>Use <a href="https://wci.llnl.gov/codes/visit/">VisIt</a> for plotting the HDF5 output.</p>
+
+<h2>
+<a name="example-simulation-of-a-mach-reflection" class="anchor" href="#example-simulation-of-a-mach-reflection"><span class="octicon octicon-link"></span></a>Example Simulation of a Mach Reflection</h2>
+
+<p>Output from example problem in <a href="input.txt">input.txt</a>:
+<img src="media/mach_stem1.png" alt="Screenshot"><img src="media/mach_stem2.png" alt="Screenshot"></p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>

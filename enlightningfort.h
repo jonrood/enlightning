@@ -20,7 +20,7 @@ along with Enlightning; if not, see <http://www.gnu.org/licenses/>.
 */
 
 extern "C" {
-    void F77_FUNC(rhs, RHS) (const int &,    //ifirst(0)
+    void SAMRAI_F77_FUNC(rhs, RHS) (const int &,    //ifirst(0)
                              const int &,    //ilast(0)
                              const int &,    //ifirst(1)
                              const int &,    //ilast(1)
@@ -48,7 +48,7 @@ extern "C" {
                              const double &, // c_lr
                              const int &);   // NEQU
     
-    void F77_FUNC(runge_kutta, RUNGE_KUTTA) (const int &,    // ifirst(0)
+    void SAMRAI_F77_FUNC(runge_kutta, RUNGE_KUTTA) (const int &,    // ifirst(0)
                                              const int &,    // ilast(0)
                                              const int &,    // ifirst(1)
                                              const int &,    // ilast(1)
@@ -63,7 +63,7 @@ extern "C" {
                                              const double *, // rhs
                                              const int &);   // NEQU
     
-    void F77_FUNC(update_state, UPDATE_STATE) (const double *, // dx
+    void SAMRAI_F77_FUNC(update_state, UPDATE_STATE) (const double *, // dx
                                                const double *, // xlo
                                                const int &,    // ifirst(0)
                                                const int &,    // ilast(0)
@@ -87,7 +87,7 @@ extern "C" {
                                                const double &, // R
                                                const int &);   // NEQU
     
-    void F77_FUNC(tag_cells, TAG_CELLS) (const int &,    // ifirst(0)
+    void SAMRAI_F77_FUNC(tag_cells, TAG_CELLS) (const int &,    // ifirst(0)
                                          const int &,    // ilast(0)
                                          const int &,    // ifirst(1)
                                          const int &,    // ilast(1)

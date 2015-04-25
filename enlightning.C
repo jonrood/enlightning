@@ -26,14 +26,18 @@ along with Enlightning; if not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 using namespace std;
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <float.h>
+//#include <stdlib.h>
+//#include <stdio.h>
+//#include <math.h>
+//#include <float.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
+#include <cfloat>
 
-#include "SAMRAI/tbox/Array.h"
+//#include "SAMRAI/tbox/Array.h"
 #include "SAMRAI/hier/BoundaryBox.h"
-#include "SAMRAI/hier/BoxArray.h"
+//#include "SAMRAI/hier/BoxArray.h"
 #include "SAMRAI/geom/CartesianPatchGeometry.h"
 #include "SAMRAI/pdat/CellData.h"
 #include "SAMRAI/pdat/CellIndex.h"
@@ -72,32 +76,107 @@ using namespace std;
 #define PI 3.14159265358979323846264338
 
 // Timers.
-tbox::Pointer<tbox::Timer> enlightning::t_init;
-tbox::Pointer<tbox::Timer> enlightning::t_rhs;
-tbox::Pointer<tbox::Timer> enlightning::t_rk;
-tbox::Pointer<tbox::Timer> enlightning::t_state;
-tbox::Pointer<tbox::Timer> enlightning::t_absorb;
-tbox::Pointer<tbox::Timer> enlightning::t_bc;
-tbox::Pointer<tbox::Timer> enlightning::t_tag;
-tbox::Pointer<tbox::Timer> enlightning::t_addsource;
-tbox::Pointer<tbox::Timer> enlightning::t_record;
+boost::shared_ptr<tbox::Timer> enlightning::t_init;
+boost::shared_ptr<tbox::Timer> enlightning::t_rhs;
+boost::shared_ptr<tbox::Timer> enlightning::t_rk;
+boost::shared_ptr<tbox::Timer> enlightning::t_state;
+boost::shared_ptr<tbox::Timer> enlightning::t_absorb;
+boost::shared_ptr<tbox::Timer> enlightning::t_bc;
+boost::shared_ptr<tbox::Timer> enlightning::t_tag;
+boost::shared_ptr<tbox::Timer> enlightning::t_addsource;
+boost::shared_ptr<tbox::Timer> enlightning::t_record;
 
 // Constructor to intialize simulation variables.
 enlightning::enlightning(const string& object_name,
                          const tbox::Dimension& dim,
-                         tbox::Pointer<tbox::Database> input_db,
-                         tbox::Pointer<geom::CartesianGridGeometry> grid_geom):
-algs::MethodOfLinesPatchStrategy::MethodOfLinesPatchStrategy(dim),
+                         boost::shared_ptr<tbox::Database> input_db,
+                         boost::shared_ptr<geom::CartesianGridGeometry> grid_geom):
+algs::MethodOfLinesPatchStrategy::MethodOfLinesPatchStrategy(),
+p_object_name(object_name),
+p_grid_geometry(grid_geom),
 p_dim(dim),
-p_nghosts(p_dim, CELLG),
-p_zero_ghosts(p_dim, 0)
+p_nghosts(dim, CELLG),
+//p_nghosts(hier::IntVector(dim, CELLG)),
+p_zero_ghosts(p_dim, 0),
+// Allocate grid cell variables.
+p_w_n(new pdat::CellVariable<double>(dim, "w_n", NEQU)),
+p_K(new pdat::CellVariable<double>(dim, "K", NEQU)),
+p_pressure(new pdat::CellVariable<double>(dim, "pressure", 1)),
+p_temperature(new pdat::CellVariable<double>(dim, "temperature", 1)),
+p_source(new pdat::CellVariable<double>(dim, "source", 1)),
+// Initialize variables to NaN, etc.
+p_src_type(tbox::MathUtilities<string>::getMax()),
+p_src_type_int(tbox::MathUtilities<int>::getSignalingNaN()),
+p_src_mode(tbox::MathUtilities<string>::getMax()),
+p_src_mode_int(tbox::MathUtilities<int>::getSignalingNaN()),
+p_cfl(tbox::MathUtilities<double>::getSignalingNaN()),
+p_specific_dt(tbox::MathUtilities<double>::getSignalingNaN()),
+p_start_time(tbox::MathUtilities<double>::getSignalingNaN()),
+p_end_time(tbox::MathUtilities<double>::getSignalingNaN()),
+p_loop_time(tbox::MathUtilities<double>::getSignalingNaN()),
+p_max_timesteps(tbox::MathUtilities<int>::getSignalingNaN()),
+p_regrid_step(tbox::MathUtilities<int>::getSignalingNaN()),
+p_tag_buffer(tbox::MathUtilities<int>::getSignalingNaN()),
+p_viz_pressure(tbox::MathUtilities<int>::getSignalingNaN()),
+p_viz_source(tbox::MathUtilities<int>::getSignalingNaN()),
+p_viz_temperature(tbox::MathUtilities<int>::getSignalingNaN()),
+p_viz_w_n(tbox::MathUtilities<int>::getSignalingNaN()),
+p_iteration_number(tbox::MathUtilities<int>::getSignalingNaN()),
+p_bc_type_L(tbox::MathUtilities<string>::getMax()),
+p_bc_type_R(tbox::MathUtilities<string>::getMax()),
+p_bc_type_B(tbox::MathUtilities<string>::getMax()),
+p_bc_type_T(tbox::MathUtilities<string>::getMax()),
+p_bc_type_L_int(tbox::MathUtilities<int>::getSignalingNaN()),
+p_bc_type_R_int(tbox::MathUtilities<int>::getSignalingNaN()),
+p_bc_type_B_int(tbox::MathUtilities<int>::getSignalingNaN()),
+p_bc_type_T_int(tbox::MathUtilities<int>::getSignalingNaN()),
+p_bc_absorb_width(tbox::MathUtilities<double>::getSignalingNaN()),
+p_src_amp(tbox::MathUtilities<double>::getSignalingNaN()),
+p_src_spread(tbox::MathUtilities<double>::getSignalingNaN()),
+p_src_sine_amp(tbox::MathUtilities<double>::getSignalingNaN()),
+p_src_sine_freq(tbox::MathUtilities<double>::getSignalingNaN()),
+p_src_omega(tbox::MathUtilities<double>::getSignalingNaN()),
+p_src_num_pulses(tbox::MathUtilities<int>::getSignalingNaN()),
+p_p0(tbox::MathUtilities<double>::getSignalingNaN()),
+p_sampled_p0(tbox::MathUtilities<double>::getSignalingNaN()),
+p_T0(tbox::MathUtilities<double>::getSignalingNaN()),
+p_c_lr(tbox::MathUtilities<double>::getSignalingNaN()),
+p_rho0(tbox::MathUtilities<double>::getSignalingNaN()),
+p_c(tbox::MathUtilities<double>::getSignalingNaN()),
+p_gamma1(tbox::MathUtilities<double>::getSignalingNaN()),
+p_RH(tbox::MathUtilities<double>::getSignalingNaN()),
+p_R(tbox::MathUtilities<double>::getSignalingNaN()),
+p_c_p(tbox::MathUtilities<double>::getSignalingNaN()),
+p_T_star_n(tbox::MathUtilities<double>::getSignalingNaN()),
+p_T_star_o(tbox::MathUtilities<double>::getSignalingNaN()),
+p_mu(tbox::MathUtilities<double>::getSignalingNaN()),
+p_muB(tbox::MathUtilities<double>::getSignalingNaN()),
+p_kappa(tbox::MathUtilities<double>::getSignalingNaN()),
+p_weno_alpha(tbox::MathUtilities<double>::getSignalingNaN()),
+p_tau_n(tbox::MathUtilities<double>::getSignalingNaN()),
+p_tau_o(tbox::MathUtilities<double>::getSignalingNaN()),
+p_R_tilde(tbox::MathUtilities<double>::getSignalingNaN()),
+p_c_v(tbox::MathUtilities<double>::getSignalingNaN()),
+p_M(tbox::MathUtilities<double>::getSignalingNaN()),
+p_record_audio(tbox::MathUtilities<int>::getSignalingNaN()),
+p_num_mics(tbox::MathUtilities<int>::getSignalingNaN()),
+p_use_sample_rate_dt(tbox::MathUtilities<int>::getSignalingNaN()),
+p_wav_sample_rate(tbox::MathUtilities<int>::getSignalingNaN()),
+p_lightning_input_line_count(tbox::MathUtilities<int>::getSignalingNaN())
 {
     TBOX_ASSERT(!object_name.empty());
-    TBOX_ASSERT(!input_db.isNull());
-    TBOX_ASSERT(!grid_geom.isNull());
+    TBOX_ASSERT(input_db);
+    TBOX_ASSERT(grid_geom);
     
+    tbox::MathUtilities<double>::setArrayToSignalingNaN(p_tag_tolerance, 3),
+    tbox::MathUtilities<double>::setArrayToSignalingNaN(p_src_pos, 2),
+p_src_pulse_times.resize(0);
+p_mic_pos_x.resize(0);
+p_mic_pos_y.resize(0);
+p_lightning_coords.resize(0);
+
     // Register timers.
-    if (t_init.isNull()) {
+    if (!t_init) {
         t_init = tbox::TimerManager::getManager()->
             getTimer("apps::enlightning::initializeDataOnPatch()");
         t_rhs = tbox::TimerManager::getManager()->
@@ -119,83 +198,8 @@ p_zero_ghosts(p_dim, 0)
     }
     
     // Register the enlightning object with the restart manager.
-    p_object_name = object_name;
     tbox::RestartManager::getManager()->registerRestartItem(p_object_name, this);
-    p_grid_geometry = grid_geom;
-    
-    // Allocate grid cell variables.
-    p_w_n = new pdat::CellVariable<double>(dim, "w_n", NEQU);
-    p_K = new pdat::CellVariable<double>(dim, "K", NEQU);
-    p_pressure = new pdat::CellVariable<double>(dim, "pressure", 1);
-    p_temperature = new pdat::CellVariable<double>(dim, "temperature", 1);
-    p_source = new pdat::CellVariable<double>(dim, "source", 1);
-    
-    // Initialize variables to NaN, etc.
-    p_src_type = tbox::MathUtilities<char>::getMax();
-    p_src_type_int = tbox::MathUtilities<int>::getSignalingNaN();
-    p_src_mode = tbox::MathUtilities<char>::getMax();
-    p_src_mode_int = tbox::MathUtilities<int>::getSignalingNaN();
-    p_cfl = tbox::MathUtilities<double>::getSignalingNaN();
-    p_specific_dt = tbox::MathUtilities<double>::getSignalingNaN();
-    tbox::MathUtilities<double>::setArrayToSignalingNaN(p_tag_tolerance, 3);
-    p_start_time = tbox::MathUtilities<double>::getSignalingNaN();
-    p_end_time = tbox::MathUtilities<double>::getSignalingNaN();
-    p_loop_time = tbox::MathUtilities<double>::getSignalingNaN();
-    p_max_timesteps = tbox::MathUtilities<int>::getSignalingNaN();
-    p_regrid_step = tbox::MathUtilities<int>::getSignalingNaN();
-    p_tag_buffer = tbox::MathUtilities<int>::getSignalingNaN();
-    p_viz_pressure = tbox::MathUtilities<int>::getSignalingNaN();
-    p_viz_source = tbox::MathUtilities<int>::getSignalingNaN();
-    p_viz_temperature = tbox::MathUtilities<int>::getSignalingNaN();
-    p_viz_w_n = tbox::MathUtilities<int>::getSignalingNaN();
-    p_iteration_number = tbox::MathUtilities<int>::getSignalingNaN();
-    p_bc_type_L = tbox::MathUtilities<char>::getMax();
-    p_bc_type_R = tbox::MathUtilities<char>::getMax();
-    p_bc_type_B = tbox::MathUtilities<char>::getMax();
-    p_bc_type_T = tbox::MathUtilities<char>::getMax();
-    p_bc_type_L_int = tbox::MathUtilities<int>::getSignalingNaN();
-    p_bc_type_R_int = tbox::MathUtilities<int>::getSignalingNaN();
-    p_bc_type_B_int = tbox::MathUtilities<int>::getSignalingNaN();
-    p_bc_type_T_int = tbox::MathUtilities<int>::getSignalingNaN();
-    p_bc_absorb_width = tbox::MathUtilities<double>::getSignalingNaN();
-    p_src_amp = tbox::MathUtilities<double>::getSignalingNaN();
-    p_src_spread = tbox::MathUtilities<double>::getSignalingNaN();
-    tbox::MathUtilities<double>::setArrayToSignalingNaN(p_src_pos, 2);
-    p_src_sine_amp = tbox::MathUtilities<double>::getSignalingNaN();
-    p_src_sine_freq = tbox::MathUtilities<double>::getSignalingNaN();
-    p_src_omega = tbox::MathUtilities<double>::getSignalingNaN();
-    p_src_num_pulses = tbox::MathUtilities<int>::getSignalingNaN();
-    p_src_pulse_times.resizeArray(0);
-    p_p0 = tbox::MathUtilities<double>::getSignalingNaN();
-    p_sampled_p0 = tbox::MathUtilities<double>::getSignalingNaN();
-    p_T0 = tbox::MathUtilities<double>::getSignalingNaN();
-    p_c_lr = tbox::MathUtilities<double>::getSignalingNaN();
-    p_rho0 = tbox::MathUtilities<double>::getSignalingNaN();
-    p_c = tbox::MathUtilities<double>::getSignalingNaN();
-    p_gamma1 = tbox::MathUtilities<double>::getSignalingNaN();
-    p_RH = tbox::MathUtilities<double>::getSignalingNaN();
-    p_R = tbox::MathUtilities<double>::getSignalingNaN();
-    p_c_p = tbox::MathUtilities<double>::getSignalingNaN();
-    p_T_star_n = tbox::MathUtilities<double>::getSignalingNaN();
-    p_T_star_o = tbox::MathUtilities<double>::getSignalingNaN();
-    p_mu = tbox::MathUtilities<double>::getSignalingNaN();
-    p_muB = tbox::MathUtilities<double>::getSignalingNaN();
-    p_kappa = tbox::MathUtilities<double>::getSignalingNaN();
-    p_weno_alpha = tbox::MathUtilities<double>::getSignalingNaN();
-    p_tau_n = tbox::MathUtilities<double>::getSignalingNaN();
-    p_tau_o = tbox::MathUtilities<double>::getSignalingNaN();
-    p_R_tilde = tbox::MathUtilities<double>::getSignalingNaN();
-    p_c_v = tbox::MathUtilities<double>::getSignalingNaN();
-    p_M = tbox::MathUtilities<double>::getSignalingNaN();
-    p_record_audio = tbox::MathUtilities<int>::getSignalingNaN();
-    p_num_mics = tbox::MathUtilities<int>::getSignalingNaN();
-    p_mic_pos_x.resizeArray(0);
-    p_mic_pos_y.resizeArray(0);
-    p_use_sample_rate_dt = tbox::MathUtilities<int>::getSignalingNaN();
-    p_wav_sample_rate = tbox::MathUtilities<int>::getSignalingNaN();
-    p_lightning_coords.resizeArray(0);
-    p_lightning_input_line_count = tbox::MathUtilities<int>::getSignalingNaN();
-    
+   
     // If restarting load data from checkpoint, otherwise load initial conditions.
     bool is_from_restart = tbox::RestartManager::getManager()->isFromRestart();
     if (is_from_restart) {
@@ -237,15 +241,15 @@ p_zero_ghosts(p_dim, 0)
 // Destructor only sets timers to NULL.
 enlightning::~enlightning()
 {
-    t_init = NULL;
-    t_rhs = NULL;
-    t_rk = NULL;
-    t_state = NULL;
-    t_absorb = NULL;
-    t_bc = NULL;
-    t_tag = NULL;
-    t_addsource = NULL;
-    t_record = NULL;
+    t_init.reset();
+    t_rhs.reset();
+    t_rk.reset();
+    t_state.reset();
+    t_absorb.reset();
+    t_bc.reset();
+    t_tag.reset();
+    t_addsource.reset();
+    t_record.reset();
 }
 
 // Register cell variables with SAMRAI.
@@ -298,12 +302,12 @@ void enlightning::registerModelVariables(algs::MethodOfLinesIntegrator* integrat
         for (int n = 0; n < NEQU; n++) {
             sprintf(buffer, "%s%01d", dump_name.c_str(), n);
             string variable_name(buffer);
-            if (!(p_visit_writer.isNull())) {
+            if (p_visit_writer) {
                 p_visit_writer->registerPlotQuantity(variable_name,
                                                      "SCALAR",
                                                      grid_id, n);
             }
-            if (p_visit_writer.isNull()) {
+            if (!p_visit_writer) {
                 TBOX_WARNING(p_object_name 
                              << ": registerModelVariables()\n"
                              << "Visit data writer was not registered.\n"
@@ -318,7 +322,7 @@ void enlightning::registerModelVariables(algs::MethodOfLinesIntegrator* integrat
     // Output visualization for the pressure grid.
     if (p_viz_pressure == 1) {
         grid_id = vardb->mapVariableAndContextToIndex(p_pressure, getInteriorContext());
-        if (!(p_visit_writer.isNull())) {
+        if (p_visit_writer) {
             p_visit_writer->registerPlotQuantity("pressure",
                                                  "SCALAR",
                                                  grid_id,
@@ -336,7 +340,7 @@ void enlightning::registerModelVariables(algs::MethodOfLinesIntegrator* integrat
     // Output visualization for the temperature grid.
     if (p_viz_temperature == 1) {
         grid_id = vardb->mapVariableAndContextToIndex(p_temperature, getInteriorContext());
-        if (!(p_visit_writer.isNull())) {
+        if (p_visit_writer) {
             p_visit_writer->registerPlotQuantity("temperature",
                                                  "SCALAR",
                                                  grid_id, 0);
@@ -353,7 +357,7 @@ void enlightning::registerModelVariables(algs::MethodOfLinesIntegrator* integrat
     // Output visualization for the source grid.
     if (p_viz_source == 1) {
         grid_id = vardb->mapVariableAndContextToIndex(p_source, getInteriorContext());
-        if (!(p_visit_writer.isNull())) {
+        if (p_visit_writer) {
             p_visit_writer->registerPlotQuantity("source", "SCALAR",
                                                  grid_id, 0);
         } else {
@@ -379,25 +383,31 @@ void enlightning::initializeDataOnPatch(hier::Patch& patch,
     t_init->start();
     
     // Get source grid object.
-    tbox::Pointer<pdat::CellData<double> > source_grid =
-        patch.getPatchData(p_source, getInteriorContext());
-    
+   boost::shared_ptr<pdat::CellData<double> > source_grid(
+                        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+	                                         patch.getPatchData(p_source, getInteriorContext()))); 
+
+
     // Set source to 0 every timestep.
     source_grid->fillAll(0);
     
     // Use initial conditions at first timestep.
     if (initial_time) {
-        const tbox::Pointer<geom::CartesianPatchGeometry> patch_geom =
-            patch.getPatchGeometry();
+   const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
+		        BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
+			                patch.getPatchGeometry()));
         
-        tbox::Pointer<pdat::CellData<double> > w_n =
-            patch.getPatchData(p_w_n, getInteriorContext());
+   boost::shared_ptr<pdat::CellData<double> > w_n(
+		        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+			                patch.getPatchData(p_w_n, getInteriorContext())));
         
-        tbox::Pointer<pdat::CellData<double> > pressure_grid =
-            patch.getPatchData(p_pressure, getInteriorContext());
+   boost::shared_ptr<pdat::CellData<double> > pressure_grid(
+		        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+			                patch.getPatchData(p_pressure, getInteriorContext())));
         
-        tbox::Pointer<pdat::CellData<double> > temperature_grid =
-            patch.getPatchData(p_temperature, getInteriorContext());
+   boost::shared_ptr<pdat::CellData<double> > temperature_grid(
+		        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+			                patch.getPatchData(p_temperature, getInteriorContext())));
         
         pressure_grid->fillAll(p_p0);
         temperature_grid->fillAll(p_T0);
@@ -420,8 +430,10 @@ double enlightning::computeStableDtOnPatch(hier::Patch& patch,
     (void)time;
     (void)patch;
     
-    const tbox::Pointer<geom::CartesianPatchGeometry> patch_geom =
-        patch.getPatchGeometry();
+   const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
+		        BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
+			                patch.getPatchGeometry()));
+   TBOX_ASSERT(patch_geom);   
     const double* dx = patch_geom->getDx();
     double dt = 0.0;
     
@@ -450,33 +462,49 @@ void enlightning::singleStep(hier::Patch& patch,
                              const double beta) const
 {
     // Get pointer to w_n grid for next timestep.
-    tbox::Pointer<pdat::CellData<double> > w_n =
-        patch.getPatchData(p_w_n, getInteriorWithGhostsContext());
-    
+   boost::shared_ptr<pdat::CellData<double> > w_n(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_w_n, getInteriorWithGhostsContext())));
+
     // Get pointer to w grid for this timestep.
-    tbox::Pointer<pdat::CellData<double> > w =
-        patch.getPatchData(p_w_n, getInteriorContext());
-    
-    tbox::Pointer<pdat::CellData<double> > source_grid =
-        patch.getPatchData(p_source, getInteriorContext());
-    
+   boost::shared_ptr<pdat::CellData<double> > w(
+		        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+			                patch.getPatchData(p_w_n, getInteriorContext())));
+
+   boost::shared_ptr<pdat::CellData<double> > source_grid(
+		        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+			                patch.getPatchData(p_source, getInteriorContext())));	
+
     // Scratch grid for calculating the RHS.
-    tbox::Pointer<pdat::CellData<double> > K =
-        patch.getPatchData(p_K, getInteriorContext());
-    
-    tbox::Pointer<pdat::CellData<double> > pressure_grid =
-        patch.getPatchData(p_pressure, getInteriorWithGhostsContext());
-    
-    tbox::Pointer<pdat::CellData<double> > temperature_grid =
-        patch.getPatchData(p_temperature, getInteriorWithGhostsContext());
-    
+   boost::shared_ptr<pdat::CellData<double> > K(
+		        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+			                patch.getPatchData(p_K, getInteriorContext())));
+
+   boost::shared_ptr<pdat::CellData<double> > pressure_grid(
+                            BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				                                              patch.getPatchData(p_pressure, getInteriorWithGhostsContext())));
+
+
+   boost::shared_ptr<pdat::CellData<double> > temperature_grid(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_temperature, getInteriorWithGhostsContext())));
+
+   TBOX_ASSERT(w_n);
+      TBOX_ASSERT(w);
+      TBOX_ASSERT(source_grid);
+      TBOX_ASSERT(K);
+      TBOX_ASSERT(pressure_grid);
+      TBOX_ASSERT(temperature_grid);
+
     // Get information for this patch for passing to fortran.
     const hier::Index ifirst = patch.getBox().lower();
     const hier::Index ilast = patch.getBox().upper();
     
-    const tbox::Pointer<geom::CartesianPatchGeometry> patch_geom =
-        patch.getPatchGeometry();
-    
+   const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
+		        BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
+			                patch.getPatchGeometry()));
+   TBOX_ASSERT(patch_geom);   
+
     const double* dx = patch_geom->getDx();
     const double* patchXLo = patch_geom->getXLower();
     
@@ -484,7 +512,7 @@ void enlightning::singleStep(hier::Patch& patch,
     
     // Call fortran function for calculating the right-hand side of the equation.
     t_rhs->start();
-    F77_FUNC(rhs, RHS) (ifirst(0),
+    SAMRAI_F77_FUNC(rhs, RHS) (ifirst(0),
                         ilast(0),
                         ifirst(1),
                         ilast(1),
@@ -515,7 +543,7 @@ void enlightning::singleStep(hier::Patch& patch,
     
     // Call fortran function to perform the runge kutta.
     t_rk->start();
-    F77_FUNC(runge_kutta, RUNGE_KUTTA) (ifirst(0),
+    SAMRAI_F77_FUNC(runge_kutta, RUNGE_KUTTA) (ifirst(0),
                                         ilast(0),
                                         ifirst(1),
                                         ilast(1),
@@ -533,7 +561,7 @@ void enlightning::singleStep(hier::Patch& patch,
     
     // Call fortran function to update the state variables.
     t_state->start();
-    F77_FUNC(update_state, UPDATE_STATE) (dx,
+    SAMRAI_F77_FUNC(update_state, UPDATE_STATE) (dx,
                                           patchXLo,
                                           ifirst(0),
                                           ilast(0),
@@ -574,21 +602,25 @@ void enlightning::tagGradientDetectorCells(hier::Patch& patch,
     (void)uses_richardson_extrapolation_too;
     
     // Get pointers to patch data to send to fortran functions.
-    tbox::Pointer<pdat::CellData<int> > tags = patch.getPatchData(tag_index);
+   boost::shared_ptr<pdat::CellData<int> > tags(
+		         BOOST_CAST<pdat::CellData<int>, hier::PatchData>(
+				          patch.getPatchData(tag_index)));
 
     // Only use w_n and source grids for smoothness detection.
-    tbox::Pointer<pdat::CellData<double> > w_n =
-        patch.getPatchData(p_w_n, getInteriorWithGhostsContext());
-    
-    tbox::Pointer<pdat::CellData<double> > source_grid =
-        patch.getPatchData(p_source, getInteriorWithGhostsContext());
+   boost::shared_ptr<pdat::CellData<double> > w_n(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_w_n, getInteriorWithGhostsContext())));
+ 
+   boost::shared_ptr<pdat::CellData<double> > source_grid(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_source, getInteriorWithGhostsContext())));
     
     const hier::Index ifirst = patch.getBox().lower();
     const hier::Index ilast = patch.getBox().upper();
     
     // Call fortran function to tag cells that are not smooth.
     t_tag->start();
-    F77_FUNC(tag_cells, TAG_CELLS) (ifirst(0),
+    SAMRAI_F77_FUNC(tag_cells, TAG_CELLS) (ifirst(0),
                                     ilast(0),
                                     ifirst(1),
                                     ilast(1),
@@ -615,16 +647,22 @@ void enlightning::setAbsorbingBoundaryConditions(hier::Patch& patch) const
     if ((p_bc_type_L_int == ABSORB) || (p_bc_type_R_int == ABSORB)
         || (p_bc_type_B_int == ABSORB) || (p_bc_type_T_int == ABSORB)) {
         
-        tbox::Pointer<pdat::CellData<double> > w_n =
-            patch.getPatchData(p_w_n, getInteriorWithGhostsContext());
-        tbox::Pointer<pdat::CellData<double> > pressure_grid =
-            patch.getPatchData(p_pressure, getInteriorWithGhostsContext());
-        tbox::Pointer<pdat::CellData<double> > temperature_grid =
-            patch.getPatchData(p_temperature, getInteriorWithGhostsContext());
+   boost::shared_ptr<pdat::CellData<double> > w_n(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_w_n, getInteriorWithGhostsContext())));
+
+   boost::shared_ptr<pdat::CellData<double> > pressure_grid(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_pressure, getInteriorWithGhostsContext())));
+   boost::shared_ptr<pdat::CellData<double> > temperature_grid(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_temperature, getInteriorWithGhostsContext())));
         const hier::Index ifirst = patch.getBox().lower();
         const hier::Index ilast = patch.getBox().upper();
-        const tbox::Pointer<geom::CartesianPatchGeometry> patch_geom =
-            patch.getPatchGeometry();
+   const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
+		        BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
+			                patch.getPatchGeometry()));
+   TBOX_ASSERT(patch_geom);   
         const double* dx = patch_geom->getDx();
         const double* gridXLo = p_grid_geometry->getXLower();
         const double* gridXHi = p_grid_geometry->getXUpper();
@@ -759,19 +797,26 @@ void enlightning::setPhysicalBoundaryConditions(hier::Patch& patch,
     
     t_bc->start();
     
-    const tbox::Pointer<geom::CartesianPatchGeometry> patch_geom = patch.getPatchGeometry();
+   const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
+		        BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
+			                patch.getPatchGeometry()));
+   TBOX_ASSERT(patch_geom);   
     
     //if (patch_geom->getTouchesRegularBoundary() == true) {
     const hier::Index ifirstP = patch.getBox().lower();
     const hier::Index ilastP = patch.getBox().upper();
-    tbox::Pointer<pdat::CellData<double> > w_n =
-        patch.getPatchData(p_w_n, getInteriorWithGhostsContext());
-    tbox::Pointer<pdat::CellData<double> > pressure_grid =
-        patch.getPatchData(p_pressure, getInteriorWithGhostsContext());
-    tbox::Pointer<pdat::CellData<double> > temperature_grid =
-        patch.getPatchData(p_temperature, getInteriorWithGhostsContext());
-    tbox::Pointer<pdat::CellData<double> > source_grid =
-        patch.getPatchData(p_source, getInteriorWithGhostsContext());
+   boost::shared_ptr<pdat::CellData<double> > w_n(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_w_n, getInteriorWithGhostsContext())));
+   boost::shared_ptr<pdat::CellData<double> > pressure_grid(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_pressure, getInteriorWithGhostsContext())));
+   boost::shared_ptr<pdat::CellData<double> > temperature_grid(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_temperature, getInteriorWithGhostsContext())));
+   boost::shared_ptr<pdat::CellData<double> > source_grid(
+		         BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+				          patch.getPatchData(p_source, getInteriorWithGhostsContext())));
     
     // Get pointers to cell data and information about the patch.
     double* w_n_data = w_n->getPointer();
@@ -783,8 +828,8 @@ void enlightning::setPhysicalBoundaryConditions(hier::Patch& patch,
     const int patch_area = ((ilastP(1)+1)-ifirstP(1)+2*ghost_cells(1))*patch_width;
     
     // Iterate over patch edges that touch the boundary.
-    const tbox::Array<hier::BoundaryBox> edge_bdry = patch_geom->getEdgeBoundaries();
-    for (int q = 0; q < edge_bdry.getSize(); q++) {
+    const std::vector<hier::BoundaryBox> edge_bdry = patch_geom->getEdgeBoundaries();
+    for (int q = 0; q < edge_bdry.size(); q++) {
         int bdry_loc = edge_bdry[q].getLocationIndex();
         hier::Box interior(patch.getBox());
         hier::Box fill_box =
@@ -883,8 +928,8 @@ void enlightning::setPhysicalBoundaryConditions(hier::Patch& patch,
     
     // I am not certain at the moment why I needed this section.
     // I will need to investigate it to give a more appropriate comment.
-    const tbox::Array<hier::BoundaryBox> node_bdry = patch_geom->getNodeBoundaries();
-    for (int r = 0; r < node_bdry.getSize(); r++) {
+    const std::vector<hier::BoundaryBox> node_bdry = patch_geom->getNodeBoundaries();
+    for (int r = 0; r < node_bdry.size(); r++) {
         int bdry_loc = node_bdry[r].getLocationIndex();
         hier::Box interior(patch.getBox());
         hier::Box fill_box =
@@ -938,7 +983,7 @@ void enlightning::setPhysicalBoundaryConditions(hier::Patch& patch,
 }
 
 // Store visit writer handle in a private variable.
-void enlightning::registerVisItDataWriter(tbox::Pointer<appu::VisItDataWriter> viz_writer)
+void enlightning::registerVisItDataWriter(boost::shared_ptr<appu::VisItDataWriter> viz_writer)
 {
     p_visit_writer = viz_writer;
 }
@@ -950,7 +995,7 @@ void enlightning::printClassData(ostream& os) const
     
     os << "ptr enlightning = " << (enlightning *)this << endl;
     
-    os << "ptr grid geometry = " << (geom::CartesianGridGeometry *)p_grid_geometry << endl;
+    os << "ptr grid geometry = " << p_grid_geometry.get() << endl;
     
     os << "cfl: " << p_cfl << endl;
     os << "specific_dt: " << p_specific_dt << endl;
@@ -1028,7 +1073,7 @@ void enlightning::printClassData(ostream& os) const
 
 // Use SAMRAI to parse enlightning section of the input file.
 // Also checks for correctness of input parameters.
-void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
+void enlightning::getFromInput(boost::shared_ptr<tbox::Database> db)
 {
     if (db->keyExists("cfl")) {
         p_cfl = db->getDouble("cfl");
@@ -1176,7 +1221,7 @@ void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
                    << endl);
     }
     
-    tbox::Pointer<tbox::Database> boundary_db;
+    boost::shared_ptr<tbox::Database> boundary_db;
     if (db->keyExists("boundary")) {
         boundary_db = db->getDatabase("boundary");
     } else {
@@ -1270,7 +1315,7 @@ void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
                    << endl);
     }
     
-    tbox::Pointer<tbox::Database> recording_db;
+    boost::shared_ptr<tbox::Database> recording_db;
     if (db->keyExists("recording")) {
         recording_db = db->getDatabase("recording");
     } else {
@@ -1307,8 +1352,8 @@ void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
     
     if (p_record_audio == 1) {
         if (recording_db->keyExists("mic_pos_x")) {
-            p_mic_pos_x = recording_db->getDoubleArray("mic_pos_x");
-            for (int i = 0; i < p_mic_pos_x.getSize(); i++) {
+            p_mic_pos_x = recording_db->getDoubleVector("mic_pos_x");
+            for (int i = 0; i < p_mic_pos_x.size(); i++) {
                 if ((p_mic_pos_x[i] < 0) /*|| (p_mic_pos_x[i] > hi)*/) {
                     TBOX_ERROR(p_object_name << ":  "
                                << "Input `mic_pos_x['"
@@ -1323,8 +1368,8 @@ void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
         }
         
         if (recording_db->keyExists("mic_pos_y")) {
-            p_mic_pos_y = recording_db->getDoubleArray("mic_pos_y");
-            for (int i = 0; i < p_mic_pos_y.getSize(); i++) {
+            p_mic_pos_y = recording_db->getDoubleVector("mic_pos_y");
+            for (int i = 0; i < p_mic_pos_y.size(); i++) {
                 if ((p_mic_pos_y[i] < 0) /*|| (p_mic_pos_y[i] > hi)*/) {
                     TBOX_ERROR(p_object_name << ":  "
                                << "Input `mic_pos_y['"
@@ -1338,8 +1383,8 @@ void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
                        << endl);
         }
         
-        if ((p_mic_pos_x.getSize() != p_num_mics) 
-            || (p_mic_pos_y.getSize() != p_num_mics)) {
+        if ((p_mic_pos_x.size() != p_num_mics) 
+            || (p_mic_pos_y.size() != p_num_mics)) {
             TBOX_ERROR(p_object_name << ":  "
                        << "'num_mics' does not match 'mic_pos' arrays"
                        << endl);
@@ -1372,13 +1417,13 @@ void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
         }
     } else {
         p_num_mics = 0;
-        p_mic_pos_x.setNull();
-        p_mic_pos_y.setNull();
+        p_mic_pos_x.resize(0);
+        p_mic_pos_y.resize(0);
         p_wav_sample_rate = 22050;
         p_use_sample_rate_dt = 0;
     }
     
-    tbox::Pointer<tbox::Database> src_data_db;
+    boost::shared_ptr<tbox::Database> src_data_db;
     if (db->keyExists("src_data")) {
         src_data_db = db->getDatabase("src_data");
     } else {
@@ -1514,8 +1559,8 @@ void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
     }
     
     if (src_data_db->keyExists("src_pulse_times")) {
-        p_src_pulse_times = src_data_db->getIntegerArray("src_pulse_times");
-        for (int i = 0; i < p_src_pulse_times.getSize(); i++) {
+        p_src_pulse_times = src_data_db->getIntegerVector("src_pulse_times");
+        for (int i = 0; i < p_src_pulse_times.size(); i++) {
             if (p_src_pulse_times[i] < 0) {
                 TBOX_ERROR(p_object_name << ":  "
                            << "Input `src_pulse_times['"
@@ -1529,13 +1574,13 @@ void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
                    << endl);
     }
     
-    if (p_src_pulse_times.getSize() != p_src_num_pulses) {
+    if (p_src_pulse_times.size() != p_src_num_pulses) {
         TBOX_ERROR(p_object_name << ":  "
                    << "'src_num_pulses' does not match 'src_pulse_times' array"
                    << endl);
     }
     
-    tbox::Pointer<tbox::Database> constants_db;
+    boost::shared_ptr<tbox::Database> constants_db;
     if (db->keyExists("constants")) {
         constants_db = db->getDatabase("constants");
     } else {
@@ -1730,9 +1775,9 @@ void enlightning::getFromInput(tbox::Pointer<tbox::Database> db)
 }
 
 // Save all variable and constants, etc. to database for checkpointing simulation.
-void enlightning::putToDatabase(tbox::Pointer<tbox::Database> db)
+void enlightning::putToRestart(const boost::shared_ptr<tbox::Database>& db) const
 {
-    TBOX_ASSERT(!db.isNull());
+    TBOX_ASSERT(db);
     
     db->putIntegerArray("p_nghosts", &p_nghosts[0], p_dim.getValue());
     db->putIntegerArray("p_zero_ghosts", &p_zero_ghosts[0], p_dim.getValue());
@@ -1766,8 +1811,8 @@ void enlightning::putToDatabase(tbox::Pointer<tbox::Database> db)
     db->putInteger("p_record_audio", p_record_audio);
     db->putInteger("p_num_mics", p_num_mics);
     if (p_num_mics > 0) {
-        db->putDoubleArray("p_mic_pos_x", p_mic_pos_x);
-        db->putDoubleArray("p_mic_pos_y", p_mic_pos_y);
+        db->putDoubleVector("p_mic_pos_x", p_mic_pos_x);
+        db->putDoubleVector("p_mic_pos_y", p_mic_pos_y);
     }
     db->putInteger("p_use_sample_rate_dt", p_use_sample_rate_dt);
     db->putInteger("p_wav_sample_rate", p_wav_sample_rate);
@@ -1783,7 +1828,7 @@ void enlightning::putToDatabase(tbox::Pointer<tbox::Database> db)
     db->putDouble("p_src_sine_amp", p_src_sine_amp);
     db->putDouble("p_src_sine_freq", p_src_sine_freq);
     db->putInteger("p_src_num_pulses", p_src_num_pulses);
-    db->putIntegerArray("p_src_pulse_times", p_src_pulse_times);
+    db->putIntegerVector("p_src_pulse_times", p_src_pulse_times);
     
     db->putDouble("p_p0", p_p0);
     db->putDouble("p_sampled_p0", p_sampled_p0);
@@ -1810,7 +1855,7 @@ void enlightning::putToDatabase(tbox::Pointer<tbox::Database> db)
     if (p_src_type_int == LIGHTNING) {
         db->putInteger("p_lightning_input_line_count",
                        p_lightning_input_line_count);
-        db->putDoubleArray("p_lightning_coords",
+        db->putDoubleVector("p_lightning_coords",
                            p_lightning_coords);
     }
 }
@@ -1818,10 +1863,10 @@ void enlightning::putToDatabase(tbox::Pointer<tbox::Database> db)
 // Retrieve all variables and constants, etc. from restart database for restarting a simulation.
 void enlightning::getFromRestart()
 {
-    tbox::Pointer<tbox::Database> root_db =
+    boost::shared_ptr<tbox::Database> root_db =
     tbox::RestartManager::getManager()->getRootDatabase();
     
-    tbox::Pointer<tbox::Database> restart_db;
+    boost::shared_ptr<tbox::Database> restart_db;
     
     if (root_db->isDatabase(p_object_name)) {
         restart_db = root_db->getDatabase(p_object_name);
@@ -1876,11 +1921,11 @@ void enlightning::getFromRestart()
     p_record_audio = restart_db->getInteger("p_record_audio");
     p_num_mics = restart_db->getInteger("p_num_mics");
     if (p_num_mics > 0) {
-        p_mic_pos_x = restart_db->getDoubleArray("p_mic_pos_x");
-        p_mic_pos_y = restart_db->getDoubleArray("p_mic_pos_y");
+        p_mic_pos_x = restart_db->getDoubleVector("p_mic_pos_x");
+        p_mic_pos_y = restart_db->getDoubleVector("p_mic_pos_y");
     } else {
-        p_mic_pos_x.setNull();
-        p_mic_pos_y.setNull();
+        p_mic_pos_x.resize(0);
+        p_mic_pos_y.resize(0);
     }
     p_use_sample_rate_dt = restart_db->getInteger("p_use_sample_rate_dt");
     p_wav_sample_rate = restart_db->getInteger("p_wav_sample_rate");
@@ -1896,7 +1941,7 @@ void enlightning::getFromRestart()
     p_src_sine_amp = restart_db->getDouble("p_src_sine_amp");
     p_src_sine_freq = restart_db->getDouble("p_src_sine_freq");
     p_src_num_pulses = restart_db->getInteger("p_src_num_pulses");
-    p_src_pulse_times = restart_db->getIntegerArray("p_src_pulse_times");
+    p_src_pulse_times = restart_db->getIntegerVector("p_src_pulse_times");
     
     p_p0 = restart_db->getDouble("p_p0");
     p_sampled_p0 = restart_db->getDouble("p_sampled_p0");
@@ -1924,7 +1969,7 @@ void enlightning::getFromRestart()
         p_lightning_input_line_count =
             restart_db->getInteger("p_lightning_input_line_count");
         p_lightning_coords =
-            restart_db->getDoubleArray("p_lightning_coords");
+            restart_db->getDoubleVector("p_lightning_coords");
     }
 }
 
@@ -2003,23 +2048,27 @@ int enlightning::shouldAddSource()
 }
 
 // Draw source on patch (point, sine, or lightning channel pulse, or driven point source).
-void enlightning::addSource(tbox::Pointer<hier::PatchHierarchy> patch_hier,
+void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy> patch_hier,
                             double dt)
 {
     t_addsource->start();
     const int num_levels = patch_hier->getNumberOfLevels();
     for (int q = 0; q < num_levels; q++) {
-        tbox::Pointer<hier::PatchLevel> level = patch_hier->getPatchLevel(q);
-        for (hier::PatchLevel::Iterator patch_iterator(level);
-             patch_iterator;
-             patch_iterator++) {
-            tbox::Pointer<hier::Patch> patch =
-                level->getPatch(patch_iterator->getLocalId());
-            tbox::Pointer<pdat::CellData<double> > source_grid =
-                patch->getPatchData(p_source, getInteriorContext());
+        boost::shared_ptr<hier::PatchLevel> level(patch_hier->getPatchLevel(q));
+        for (hier::PatchLevel::iterator patch_iterator(level->begin());
+             patch_iterator != level->end();
+             ++patch_iterator) {
+            boost::shared_ptr<hier::Patch> patch(
+                level->getPatch(patch_iterator->getBox().getBoxId()));
+
+   boost::shared_ptr<pdat::CellData<double> > source_grid(
+		        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+			                patch->getPatchData(p_source, getInteriorContext())));
             
-            const tbox::Pointer<geom::CartesianPatchGeometry> patch_geom =
-                patch->getPatchGeometry();
+   const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
+		        BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
+			                patch->getPatchGeometry()));
+   TBOX_ASSERT(patch_geom);   
             
             const double* dx = patch_geom->getDx();
             const double* patchXLo = patch_geom->getXLower();
@@ -2145,18 +2194,19 @@ void enlightning::addSource(tbox::Pointer<hier::PatchHierarchy> patch_hier,
 }
 
 // Used to zero out the entire source grid.
-void enlightning::setSourceToZero(tbox::Pointer<hier::PatchHierarchy> patch_hier)
+void enlightning::setSourceToZero(boost::shared_ptr<hier::PatchHierarchy> patch_hier)
 {
     const int num_levels = patch_hier->getNumberOfLevels();
     for (int q = 0; q < num_levels; q++) {
-        tbox::Pointer<hier::PatchLevel> level = patch_hier->getPatchLevel(q);
-        for (hier::PatchLevel::Iterator patch_iterator(level);
-             patch_iterator;
-             patch_iterator++) {
-            tbox::Pointer<hier::Patch> mypatch =
-                level->getPatch(patch_iterator->getLocalId());
-            tbox::Pointer<pdat::CellData<double> > source_grid =
-                mypatch->getPatchData(p_source, getInteriorContext());
+        boost::shared_ptr<hier::PatchLevel> level(patch_hier->getPatchLevel(q));
+        for (hier::PatchLevel::iterator patch_iterator(level->begin());
+             patch_iterator != level->end();
+             ++patch_iterator) {
+            boost::shared_ptr<hier::Patch> mypatch(
+                level->getPatch(patch_iterator->getBox().getBoxId()));
+   	    boost::shared_ptr<pdat::CellData<double> > source_grid(
+		        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+			                mypatch->getPatchData(p_source, getInteriorContext())));
             source_grid->fillAll(0);
         }
     }
@@ -2189,7 +2239,7 @@ void enlightning::readLightningInput(const char* input_lightning_file)
                    << endl);
     }
     
-    p_lightning_coords.resizeArray(p_lightning_input_line_count*4);
+    p_lightning_coords.resize(p_lightning_input_line_count*4);
     
     // Initialize array that will store segment coordinates in memory.
     for (int i = 0; i < p_lightning_input_line_count; i++) {
@@ -2218,23 +2268,24 @@ void enlightning::readLightningInput(const char* input_lightning_file)
 }
 
 // Record the pressure values at each timestep for each requested microphone.
-void enlightning::recordAudio(tbox::Pointer<hier::PatchHierarchy> patch_hier)
+void enlightning::recordAudio(boost::shared_ptr<hier::PatchHierarchy> patch_hier)
 {
     t_record->start();
     const int num_levels = patch_hier->getNumberOfLevels();
     
     // Iterate over grid levels.
     for (int q = 0; q < num_levels; q++) {
-        tbox::Pointer<hier::PatchLevel> level = patch_hier->getPatchLevel(q);
+        boost::shared_ptr<hier::PatchLevel> level(patch_hier->getPatchLevel(q));
         
         // Iterate over patches on grid level.
-        for (hier::PatchLevel::Iterator patch_iterator(level);
-             patch_iterator;
-             patch_iterator++) {
-            tbox::Pointer<hier::Patch> mypatch = 
-                level->getPatch(patch_iterator->getLocalId());
-            const tbox::Pointer<geom::CartesianPatchGeometry> patch_geom =
-                mypatch->getPatchGeometry();
+        for (hier::PatchLevel::iterator patch_iterator(level->begin());
+             patch_iterator != level->end();
+             ++patch_iterator) {
+            boost::shared_ptr<hier::Patch> mypatch(
+                level->getPatch(patch_iterator->getBox().getBoxId()));
+            const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
+                              BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
+		                                               mypatch->getPatchGeometry()));
             const double* patchXLo = patch_geom->getXLower();
             const double* patchXHi = patch_geom->getXUpper();
             
@@ -2255,8 +2306,9 @@ void enlightning::recordAudio(tbox::Pointer<hier::PatchHierarchy> patch_hier)
                     const hier::Index ifirst = mypatch->getBox().lower();
                     const hier::Index ilast = mypatch->getBox().upper();
                     // Get pointer to pressure data.
-                    tbox::Pointer<pdat::CellData<double> > pressure_grid =
-                        mypatch->getPatchData(p_pressure, getInteriorContext());
+                    boost::shared_ptr<pdat::CellData<double> > pressure_grid(
+		        BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
+			                mypatch->getPatchData(p_pressure, getInteriorContext())));
                     double* p_data = pressure_grid->getPointer();
                     int i = (int)((p_mic_pos_x[k]-patchXLo[0])/dx[0]);
                     int j = (int)((p_mic_pos_y[k]-patchXLo[1])/dx[1]);

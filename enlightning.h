@@ -34,13 +34,14 @@ along with Enlightning; if not, see <http://www.gnu.org/licenses/>.
 #include "SAMRAI/algs/MethodOfLinesIntegrator.h"
 #include "SAMRAI/algs/MethodOfLinesPatchStrategy.h"
 #include "SAMRAI/hier/Patch.h"
-#include "SAMRAI/tbox/Pointer.h"
+//#include "SAMRAI/tbox/Pointer.h"
 #include "SAMRAI/tbox/Serializable.h"
 #include "SAMRAI/hier/VariableContext.h"
 #include "SAMRAI/appu/VisItDataWriter.h"
 
 #define included_String
 #include <string>
+#include <vector>
 using namespace std;
 
 // Define the number for the set of Navier-Stokes equations.
@@ -57,8 +58,8 @@ public:
     
     enlightning(const string& object_name,
                 const tbox::Dimension& dim,
-                tbox::Pointer<tbox::Database> input_db,
-                tbox::Pointer<geom::CartesianGridGeometry> grid_geom);
+                boost::shared_ptr<tbox::Database> input_db,
+                boost::shared_ptr<geom::CartesianGridGeometry> grid_geom);
     
     ~enlightning();
     
@@ -73,7 +74,66 @@ public:
     double
     computeStableDtOnPatch(hier::Patch& patch,
                            const double time) const;
-    
+   
+    void
+    putToRestart(const boost::shared_ptr<tbox::Database>& db) const;
+
+    hier::IntVector getRefineOpStencilWidth(const tbox::Dimension& dim) const {
+                                            return hier::IntVector::getOne(dim);}
+
+    void
+    preprocessRefine(
+       hier::Patch& fine,
+       const hier::Patch& coarse,
+       const hier::Box& fine_box,
+       const hier::IntVector& ratio) {
+       NULL_USE(fine);
+       NULL_USE(coarse);
+       NULL_USE(fine_box);
+       NULL_USE(ratio);
+    }
+
+    void
+    postprocessRefine(
+       hier::Patch& fine,
+       const hier::Patch& coarse,
+       const hier::Box& fine_box,
+       const hier::IntVector& ratio) {
+       NULL_USE(fine);
+       NULL_USE(coarse);
+       NULL_USE(fine_box);
+       NULL_USE(ratio);
+    }
+
+   hier::IntVector
+   getCoarsenOpStencilWidth(const tbox::Dimension& dim) const {
+      return hier::IntVector::getZero(dim);
+   }
+
+   void
+   preprocessCoarsen(
+      hier::Patch& coarse,
+      const hier::Patch& fine,
+      const hier::Box& coarse_box,
+      const hier::IntVector& ratio) {
+      NULL_USE(coarse);
+      NULL_USE(fine);
+      NULL_USE(coarse_box);
+      NULL_USE(ratio);
+   }
+
+   void
+   postprocessCoarsen(
+      hier::Patch& coarse,
+      const hier::Patch& fine,
+      const hier::Box& coarse_box,
+      const hier::IntVector& ratio) {
+      NULL_USE(coarse);
+      NULL_USE(fine);
+      NULL_USE(coarse_box);
+      NULL_USE(ratio);
+   }
+
     void
     singleStep(hier::Patch& patch,
                const double dt,
@@ -93,12 +153,32 @@ public:
                                   const double fill_time,
                                   const hier::IntVector&
                                   ghost_width_to_fill);
+
+   void
+   readDirichletBoundaryDataEntry(
+      const boost::shared_ptr<tbox::Database>& db,
+      string& db_name,
+      int bdry_location_index) {
+       NULL_USE(db);
+       NULL_USE(db_name);
+       NULL_USE(bdry_location_index);
+   }
+
+   void
+   readNeumannBoundaryDataEntry(
+      const boost::shared_ptr<tbox::Database>& db,
+      string& db_name,
+      int bdry_location_index) {
+       NULL_USE(db);
+       NULL_USE(db_name);
+       NULL_USE(bdry_location_index);
+   }
+
+    //void
+    //putToDatabase(boost::shared_ptr<tbox::Database> db);
     
     void
-    putToDatabase(tbox::Pointer<tbox::Database> db);
-    
-    void
-    registerVisItDataWriter(tbox::Pointer<appu::VisItDataWriter> viz_writer);
+    registerVisItDataWriter(boost::shared_ptr<appu::VisItDataWriter> viz_writer);
     
     void
     printClassData(ostream& os) const;
@@ -140,19 +220,19 @@ public:
     shouldAddSource();
     
     void
-    addSource(tbox::Pointer<hier::PatchHierarchy> patch_hier,
+    addSource(boost::shared_ptr<hier::PatchHierarchy> patch_hier,
               double dt);
     
     void
-    setSourceToZero(tbox::Pointer<hier::PatchHierarchy> patch_hier);
+    setSourceToZero(boost::shared_ptr<hier::PatchHierarchy> patch_hier);
     
     void
-    recordAudio(tbox::Pointer<hier::PatchHierarchy> patch_hier);
+    recordAudio(boost::shared_ptr<hier::PatchHierarchy> patch_hier);
     
 private:
     
     void
-    getFromInput(tbox::Pointer<tbox::Database> db);
+    getFromInput(boost::shared_ptr<tbox::Database> db);
     
     void
     getFromRestart();
@@ -166,13 +246,13 @@ private:
     // p_ denotes variables private to the enlightning class
     string p_object_name;
     tbox::Dimension p_dim;
-    tbox::Pointer<geom::CartesianGridGeometry> p_grid_geometry;
-    tbox::Pointer<appu::VisItDataWriter> p_visit_writer;
-    tbox::Pointer<pdat::CellVariable<double> > p_w_n;
-    tbox::Pointer<pdat::CellVariable<double> > p_K;
-    tbox::Pointer<pdat::CellVariable<double> > p_pressure;
-    tbox::Pointer<pdat::CellVariable<double> > p_temperature;
-    tbox::Pointer<pdat::CellVariable<double> > p_source;
+    boost::shared_ptr<geom::CartesianGridGeometry> p_grid_geometry;
+    boost::shared_ptr<appu::VisItDataWriter> p_visit_writer;
+    boost::shared_ptr<pdat::CellVariable<double> > p_w_n;
+    boost::shared_ptr<pdat::CellVariable<double> > p_K;
+    boost::shared_ptr<pdat::CellVariable<double> > p_pressure;
+    boost::shared_ptr<pdat::CellVariable<double> > p_temperature;
+    boost::shared_ptr<pdat::CellVariable<double> > p_source;
     hier::IntVector p_nghosts;
     hier::IntVector p_zero_ghosts;
     string p_src_type;
@@ -231,24 +311,24 @@ private:
     double p_M;
     int p_record_audio;
     int p_num_mics;
-    tbox::Array<double> p_mic_pos_x;
-    tbox::Array<double> p_mic_pos_y;
+    std::vector<double> p_mic_pos_x;
+    std::vector<double> p_mic_pos_y;
     int p_src_num_pulses;
-    tbox::Array<int> p_src_pulse_times;
+    std::vector<int> p_src_pulse_times;
     int p_use_sample_rate_dt;
     int p_wav_sample_rate;
-    tbox::Array<double> p_lightning_coords;
+    std::vector<double> p_lightning_coords;
     int p_lightning_input_line_count;
 
-    static tbox::Pointer<tbox::Timer> t_init;
-    static tbox::Pointer<tbox::Timer> t_rhs;
-    static tbox::Pointer<tbox::Timer> t_rk;
-    static tbox::Pointer<tbox::Timer> t_state;
-    static tbox::Pointer<tbox::Timer> t_absorb;
-    static tbox::Pointer<tbox::Timer> t_bc;
-    static tbox::Pointer<tbox::Timer> t_tag;
-    static tbox::Pointer<tbox::Timer> t_addsource;
-    static tbox::Pointer<tbox::Timer> t_record;
+    static boost::shared_ptr<tbox::Timer> t_init;
+    static boost::shared_ptr<tbox::Timer> t_rhs;
+    static boost::shared_ptr<tbox::Timer> t_rk;
+    static boost::shared_ptr<tbox::Timer> t_state;
+    static boost::shared_ptr<tbox::Timer> t_absorb;
+    static boost::shared_ptr<tbox::Timer> t_bc;
+    static boost::shared_ptr<tbox::Timer> t_tag;
+    static boost::shared_ptr<tbox::Timer> t_addsource;
+    static boost::shared_ptr<tbox::Timer> t_record;
 };
 
 #endif

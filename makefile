@@ -1,4 +1,4 @@
-SAMRAI        = /Users/someuser/SAMRAI-v3.1.0-beta
+SAMRAI        = /Users/someuser/SAMRAI-v3.9.1/install
 SRCDIR        = .
 SUBDIR        = .
 OBJECT        = $(SAMRAI)
@@ -20,7 +20,7 @@ clean-check:
 	$(SAMCLEAN)
 
 clean:	clean-check
-	$(RM) *.f main
+	$(RM) *.f *.o main
 
 reset:	
 	$(RM) enlightning.viz/* enlightning.record/mic-* \

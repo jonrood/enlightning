@@ -20,16 +20,10 @@ along with Enlightning; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "SAMRAI/SAMRAI_config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <fstream>
-#include <time.h>
-using namespace std;
 
-#include <sys/stat.h>
+#include "enlightning.h"
+
 #include "SAMRAI/tbox/SAMRAIManager.h"
-#include "SAMRAI/tbox/Array.h"
 #include "SAMRAI/mesh/BergerRigoutsos.h"
 #include "SAMRAI/pdat/CellData.h"
 #include "SAMRAI/tbox/Database.h"
@@ -40,11 +34,11 @@ using namespace std;
 #include "SAMRAI/tbox/SAMRAI_MPI.h"
 #include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/hier/PatchLevel.h"
-#include "SAMRAI/tbox/Pointer.h"
 #include "SAMRAI/tbox/PIO.h"
 #include "SAMRAI/tbox/RestartManager.h"
 #include "SAMRAI/tbox/Utilities.h"
 #include "SAMRAI/hier/VariableDatabase.h"
+#include "SAMRAI/tbox/BalancedDepthFirstTree.h"
 #include "SAMRAI/geom/CartesianGridGeometry.h"
 #include "SAMRAI/geom/CartesianPatchGeometry.h"
 #include "SAMRAI/mesh/StandardTagAndInitialize.h"
@@ -54,10 +48,21 @@ using namespace std;
 #include "SAMRAI/tbox/Timer.h"
 #include "SAMRAI/tbox/TimerManager.h"
 
-#include "enlightning.h"
+#include "boost/shared_ptr.hpp"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <fstream>
+#include <time.h>
+using namespace std;
+
+#include <sys/stat.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 using namespace SAMRAI;
-using namespace algs;
 
 // Defines for source type.
 #define PULSE (10)
@@ -114,7 +119,7 @@ int main(int argc, char* argv[])
             << restore_num << endl;
         
         // Create object for the input database.
-        tbox::Pointer<tbox::Database>
+        boost::shared_ptr<tbox::InputDatabase>
             input_db(new tbox::InputDatabase("input_db"));
         
         // Parse and store the input file named "input_filename" for referencing.
@@ -122,7 +127,7 @@ int main(int argc, char* argv[])
                                                          input_db);
         
         // Get object for parsing "Main" section of input file.
-        tbox::Pointer<tbox::Database> main_db =
+        boost::shared_ptr<tbox::Database> main_db =
             input_db->getDatabase("Main");
         
         // Set a two-dimensional simulation.
@@ -206,13 +211,13 @@ int main(int argc, char* argv[])
         tbox::TimerManager::createManager(input_db->getDatabase("TimerManager"));
         
         // Create a grid object and read and set options for a base cartesian grid from the input file.
-        tbox::Pointer<geom::CartesianGridGeometry>
+        boost::shared_ptr<geom::CartesianGridGeometry>
             grid_geometry(new geom::CartesianGridGeometry(dim,
                                                           "CartesianGeometry",
                                                           input_db->getDatabase("CartesianGeometry")));
         
         // Create a patch hierarchy object and read and set options for how higher grid levels are defined from the input file.
-        tbox::Pointer<hier::PatchHierarchy>
+        boost::shared_ptr<hier::PatchHierarchy>
             patch_hierarchy(new hier::PatchHierarchy("PatchHierarchy",
                                                      grid_geometry,
                                                      input_db->getDatabase("PatchHierarchy")));
@@ -225,44 +230,44 @@ int main(int argc, char* argv[])
                             grid_geometry);
         
         // Create an integrator object and read and store data for the integrator section of the input file.
-        tbox::Pointer<algs::MethodOfLinesIntegrator>
+        boost::shared_ptr<algs::MethodOfLinesIntegrator>
             mol_integrator(new algs::MethodOfLinesIntegrator("MethodOfLinesIntegrator",
                                                              input_db->getDatabase("MethodOfLinesIntegrator"),
                                                              enlightning_model));
         
         // Create a cell tagging object and read and store data for the cell tagger section of the input file.
-        tbox::Pointer<mesh::StandardTagAndInitialize>
-            error_detector(new mesh::StandardTagAndInitialize(dim,
-                                                              "StandardTagAndInitialize",
-                                                              mol_integrator,
+        boost::shared_ptr<mesh::StandardTagAndInitialize>
+            error_detector(new mesh::StandardTagAndInitialize("StandardTagAndInitialize",
+                                                              mol_integrator.get(),
                                                               input_db->getDatabase("StandardTagAndInitialize")));
         
         // Create a box generator object and read and store data for the box generator section of the input file.
-        tbox::Pointer<mesh::BergerRigoutsos>
+        boost::shared_ptr<mesh::BergerRigoutsos>
             box_generator(new mesh::BergerRigoutsos(dim,
                                                     input_db->getDatabaseWithDefault("BergerRigoutsos",
-                                                                                     SAMRAI::tbox::Pointer<SAMRAI::tbox::Database>(NULL))));
+                                                                                     boost::shared_ptr<tbox::Database>())));
         
         // Set chosen load balancer type from the input file.
         const std::string lb = main_db->getStringWithDefault("load_balancer","tlb");
         
         // Create a tree load balancer object and read settings for the tree load balancer section of the input file.
-        tbox::Pointer<mesh::TreeLoadBalancer>
+        boost::shared_ptr<mesh::TreeLoadBalancer>
             tree_load_balancer(new mesh::TreeLoadBalancer(dim,
                                                           "TreeLoadBalancer",
-                                                          input_db->getDatabase("TreeLoadBalancer")));
+                                                          input_db->getDatabase("TreeLoadBalancer"),
+            boost::shared_ptr<tbox::RankTreeStrategy>(new tbox::BalancedDepthFirstTree)));
         
         // Initialize MPI for the tree load balancer.
         tree_load_balancer->setSAMRAI_MPI(tbox::SAMRAI_MPI::getSAMRAIWorld());
         
         // Create chop and pack load balancer object and read setting for the chop and pack load balancer section of the input file.
-        tbox::Pointer<mesh::ChopAndPackLoadBalancer>
+        boost::shared_ptr<mesh::ChopAndPackLoadBalancer>
             chop_load_balancer(new mesh::ChopAndPackLoadBalancer(dim,
                                                                  "ChopLoadBalancer",
                                                                  input_db->getDatabase("ChopLoadBalancer")));
         
         // Create object to set as the chosen load balancer.
-        tbox::Pointer<mesh::LoadBalanceStrategy> my_load_balancer;
+        boost::shared_ptr<mesh::LoadBalanceStrategy> my_load_balancer;
         
         // Set chosen load balancer.
         if (lb == "tlb") {
@@ -274,7 +279,7 @@ int main(int argc, char* argv[])
         }
         
         // Create gridding algorithm object and read settings for the gridding algorithm section of the input file.
-        tbox::Pointer<mesh::GriddingAlgorithm>
+        boost::shared_ptr<mesh::GriddingAlgorithm>
             gridding_algorithm(new mesh::GriddingAlgorithm(patch_hierarchy,
                                                            "GriddingAlgorithm",
                                                            input_db->getDatabase("GriddingAlgorithm"),
@@ -283,7 +288,7 @@ int main(int argc, char* argv[])
                                                            my_load_balancer));
         
         // Create visit data writer object for outputing hdf5 plots.
-        tbox::Pointer<appu::VisItDataWriter>
+        boost::shared_ptr<appu::VisItDataWriter>
             visit_data_writer(new appu::VisItDataWriter(dim,
                                                         "Enlightning VisIt Writer",
                                                         visit_dump_dirname,
@@ -306,22 +311,24 @@ int main(int argc, char* argv[])
         mol_integrator->initializeIntegrator(gridding_algorithm);
         
         // Create array of cell tagging objects for each level of the grid.
-        tbox::Array<int>
+        std::vector<int>
             tag_buffer_array(patch_hierarchy->getMaxNumberOfLevels());
         for (int il = 0; il < patch_hierarchy->getMaxNumberOfLevels(); il++) {
             tag_buffer_array[il] = enlightning_model->getTagBuffer();
         }
         
         // Create object for deciding when to regrid.
-        tbox::Array<double>
+        std::vector<double>
             regrid_start_time(patch_hierarchy->getMaxNumberOfLevels());
         
         // Initialize variable that holds the simulation time elapsed, i.e. not the run time elapsed.
         double loop_time = enlightning_model->getLoopTime();
-        
+        int loop_cycle = enlightning_model->getIterationNumber(); 
+
         // If restarting, load the saved grid hierarchy, otherwise initialize a grid hierarchy.
         if (tbox::RestartManager::getManager()->isFromRestart()) {
-            patch_hierarchy->getFromRestart();
+            patch_hierarchy->initializeHierarchy();
+            //patch_hierarchy->getFromRestart();
             gridding_algorithm->getTagAndInitializeStrategy()->
                 resetHierarchyConfiguration(patch_hierarchy,
                                             0,
@@ -329,13 +336,15 @@ int main(int argc, char* argv[])
         } else {
             gridding_algorithm->makeCoarsestLevel(loop_time);
             bool done = false;
-            bool initial_time = true;
+            bool initial_cycle = true;
             for (int ln = 0;
                  patch_hierarchy->levelCanBeRefined(ln) && !done;
-                 ln++) {
-                gridding_algorithm->makeFinerLevel(loop_time,
-                                                   initial_time,
-                                                   tag_buffer_array[ln]);
+                 ++ln) {
+                gridding_algorithm->makeFinerLevel(
+                                                   tag_buffer_array[ln],
+						   initial_cycle,
+                                                   loop_cycle,
+                                                   loop_time);
                 done = !(patch_hierarchy->finerLevelExists(ln));
             }
         }
@@ -381,7 +390,8 @@ int main(int argc, char* argv[])
             // Add source at this timestep if necessary.
             if (enlightning_model->shouldAddSource()) {
                 bool done = false;
-                bool initial_time = false;
+                bool initial_cycle = false;
+                int loop_cycle = enlightning_model->getIterationNumber(); 
                 added_source = true;
                 tbox::pout << "adding source..." << endl;
                 enlightning_model->addSource(patch_hierarchy, dt);
@@ -390,9 +400,11 @@ int main(int argc, char* argv[])
                 for (int ln = 0;
                      patch_hierarchy->levelCanBeRefined(ln) && !done;
                      ln++) {
-                    gridding_algorithm->makeFinerLevel(loop_time,
-                                                       initial_time,
-                                                       tag_buffer_array[ln]);
+                     gridding_algorithm->makeFinerLevel(
+                                                   tag_buffer_array[ln],
+						   initial_cycle,
+                                                   loop_cycle,
+                                                   loop_time);
                     done = !(patch_hierarchy->finerLevelExists(ln));
                     enlightning_model->addSource(patch_hierarchy, dt);
                 }
@@ -444,8 +456,9 @@ int main(int argc, char* argv[])
                 tbox::plog << patch_hierarchy->getFinestLevelNumber() << "->";
                 
                 gridding_algorithm->regridAllFinerLevels(0,
-                                                         loop_time,
                                                          tag_buffer_array,
+							 iteration_num,
+                                                         loop_time,
                                                          regrid_start_time);
                 
                 tbox::plog << patch_hierarchy->getFinestLevelNumber() << endl;
@@ -544,18 +557,18 @@ int main(int argc, char* argv[])
         tbox::TimerManager::getManager()->print(tbox::plog);
         
         // Throw away all the objects.
-        box_generator.setNull();
-        tree_load_balancer.setNull();
-        chop_load_balancer.setNull();
-        my_load_balancer.setNull();
-        gridding_algorithm.setNull();
-        visit_data_writer.setNull();
-        error_detector.setNull();
-        mol_integrator.setNull();
-        patch_hierarchy.setNull();
-        grid_geometry.setNull();
-        main_db.setNull();
-        input_db.setNull();
+        box_generator.reset();
+        tree_load_balancer.reset();
+        chop_load_balancer.reset();
+        my_load_balancer.reset();
+        gridding_algorithm.reset();
+        visit_data_writer.reset();
+        error_detector.reset();
+        mol_integrator.reset();
+        patch_hierarchy.reset();
+        grid_geometry.reset();
+        main_db.reset();
+        input_db.reset();
         if (enlightning_model)
             delete enlightning_model;
     }

@@ -439,7 +439,6 @@ double enlightning::computeStableDtOnPatch(hier::Patch& patch,
   const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
     BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
       patch.getPatchGeometry()));
-  TBOX_ASSERT(patch_geom);
   const double *dx = patch_geom->getDx();
   double dt        = 0.0;
 
@@ -2160,7 +2159,6 @@ void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
       const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
         BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
           patch->getPatchGeometry()));
-      TBOX_ASSERT(patch_geom);
 
       const double *dx       = patch_geom->getDx();
       const double *patchXLo = patch_geom->getXLower();

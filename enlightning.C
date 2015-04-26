@@ -490,13 +490,6 @@ void enlightning::singleStep(hier::Patch& patch,
     BOOST_CAST<pdat::CellData<double>, hier::PatchData>(
       patch.getPatchData(p_temperature, getInteriorWithGhostsContext())));
 
-  TBOX_ASSERT(w_n);
-  TBOX_ASSERT(w);
-  TBOX_ASSERT(source_grid);
-  TBOX_ASSERT(K);
-  TBOX_ASSERT(pressure_grid);
-  TBOX_ASSERT(temperature_grid);
-
   // Get information for this patch for passing to fortran.
   const hier::Index ifirst = patch.getBox().lower();
   const hier::Index ilast  = patch.getBox().upper();
@@ -504,7 +497,6 @@ void enlightning::singleStep(hier::Patch& patch,
   const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
     BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
       patch.getPatchGeometry()));
-  TBOX_ASSERT(patch_geom);
 
   const double *dx       = patch_geom->getDx();
   const double *patchXLo = patch_geom->getXLower();
@@ -662,7 +654,6 @@ void enlightning::setAbsorbingBoundaryConditions(hier::Patch& patch) const
     const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
       BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
         patch.getPatchGeometry()));
-    TBOX_ASSERT(patch_geom);
     const double *dx                  = patch_geom->getDx();
     const double *gridXLo             = p_grid_geometry->getXLower();
     const double *gridXHi             = p_grid_geometry->getXUpper();
@@ -672,7 +663,7 @@ void enlightning::setAbsorbingBoundaryConditions(hier::Patch& patch) const
     const hier::IntVector ghost_cells = w_n->getGhostCellWidth();
     const int patch_width             =
       (ilast(0) + 1) - ifirst(0) + 2 * ghost_cells(0);
-    const int patch_area =
+    const int patch_area              =
       ((ilast(1) + 1) - ifirst(1) + 2 * ghost_cells(1)) * patch_width;
     double xc[2];
     const double *patchXLo = patch_geom->getXLower();
@@ -684,8 +675,7 @@ void enlightning::setAbsorbingBoundaryConditions(hier::Patch& patch) const
     if (p_bc_type_L_int == ABSORB) {
       xc[0] = patchXLo[0] + dx[0] * (0.5);
       tmp   =
-        -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(xc[0] - gridXLo[0])) +
-        1;
+        -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(xc[0] - gridXLo[0])) + 1;
 
       for (int j = ifirst(1); j <= ilast(1); j++) {
         xc[1] = patchXLo[1] + dx[1] * ((double)(j - ifirst(1)) + 0.5);
@@ -858,7 +848,6 @@ void enlightning::setPhysicalBoundaryConditions(hier::Patch          & patch,
   const boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom(
     BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
       patch.getPatchGeometry()));
-  TBOX_ASSERT(patch_geom);
 
   // if (patch_geom->getTouchesRegularBoundary() == true) {
   const hier::Index ifirstP = patch.getBox().lower();
@@ -1638,9 +1627,8 @@ void enlightning::getFromInput(boost::shared_ptr<tbox::Database>db)
   if (src_data_db->keyExists("src_pos")) {
     src_data_db->getDoubleArray("src_pos", p_src_pos, p_dim.getValue());
 
-    if ((p_src_pos[0] < 0) || (p_src_pos[1] < 0)
-
-        /*|| (p_src_pos[0] >= hi) || (p_src_pos[1] >= hi)*/) {
+    if ((p_src_pos[0] < 0) || (p_src_pos[1] < 0) /*|| (p_src_pos[0] >= hi) 
+						   || (p_src_pos[1] >= hi)*/) {
       TBOX_ERROR(p_object_name << ":  "
                                << "Input `src_pos' bad value."
                                << endl);
@@ -2026,7 +2014,7 @@ void enlightning::getFromRestart()
     if (p_nghosts(i) != CELLG) {
       TBOX_ERROR(p_object_name << ": "
                                << "Key data `p_nghosts' in restart file != CELLG." <<
-        endl);
+                 endl);
     }
   }
   int *tmp_zero_ghosts = &p_zero_ghosts[0];
@@ -2036,7 +2024,7 @@ void enlightning::getFromRestart()
     if (p_zero_ghosts(i) != 0) {
       TBOX_ERROR(p_object_name << ": "
                                << "Key data `p_zero_ghosts' in restart file != 0." <<
-        endl);
+                 endl);
     }
   }
 
@@ -2048,23 +2036,23 @@ void enlightning::getFromRestart()
   p_loop_time        = restart_db->getDouble("p_loop_time");
   p_iteration_number = restart_db->getInteger("p_iteration_number");
 
-  p_cfl         = restart_db->getDouble("p_cfl");
-  p_specific_dt = restart_db->getDouble("p_specific_dt");
+  p_cfl              = restart_db->getDouble("p_cfl");
+  p_specific_dt      = restart_db->getDouble("p_specific_dt");
   restart_db->getDoubleArray("p_tag_tolerance", p_tag_tolerance, 3);
-  p_viz_pressure    = restart_db->getInteger("p_viz_pressure");
-  p_viz_source      = restart_db->getInteger("p_viz_source");
-  p_viz_temperature = restart_db->getInteger("p_viz_temperature");
-  p_viz_w_n         = restart_db->getInteger("p_viz_w_n");
+  p_viz_pressure     = restart_db->getInteger("p_viz_pressure");
+  p_viz_source       = restart_db->getInteger("p_viz_source");
+  p_viz_temperature  = restart_db->getInteger("p_viz_temperature");
+  p_viz_w_n          = restart_db->getInteger("p_viz_w_n");
 
-  p_bc_type_L       = restart_db->getString("p_bc_type_L");
-  p_bc_type_L_int   = restart_db->getInteger("p_bc_type_L_int");
-  p_bc_type_R       = restart_db->getString("p_bc_type_R");
-  p_bc_type_R_int   = restart_db->getInteger("p_bc_type_R_int");
-  p_bc_type_B       = restart_db->getString("p_bc_type_B");
-  p_bc_type_B_int   = restart_db->getInteger("p_bc_type_B_int");
-  p_bc_type_T       = restart_db->getString("p_bc_type_T");
-  p_bc_type_T_int   = restart_db->getInteger("p_bc_type_T_int");
-  p_bc_absorb_width = restart_db->getDouble("p_bc_absorb_width");
+  p_bc_type_L        = restart_db->getString("p_bc_type_L");
+  p_bc_type_L_int    = restart_db->getInteger("p_bc_type_L_int");
+  p_bc_type_R        = restart_db->getString("p_bc_type_R");
+  p_bc_type_R_int    = restart_db->getInteger("p_bc_type_R_int");
+  p_bc_type_B        = restart_db->getString("p_bc_type_B");
+  p_bc_type_B_int    = restart_db->getInteger("p_bc_type_B_int");
+  p_bc_type_T        = restart_db->getString("p_bc_type_T");
+  p_bc_type_T_int    = restart_db->getInteger("p_bc_type_T_int");
+  p_bc_absorb_width  = restart_db->getDouble("p_bc_absorb_width");
 
   p_record_audio = restart_db->getInteger("p_record_audio");
   p_num_mics     = restart_db->getInteger("p_num_mics");
@@ -2355,12 +2343,13 @@ void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
                                                           (xc[0] -
                                                            p_lightning_coords[k *
                                                                               4 +
-                  0])
-                                                          + cos(theta) *
+                                                                              0])
+                                                          + cos(
+                                                            theta) *
                                                           (xc[1] -
                                                            p_lightning_coords[k *
                                                                               4 +
-                  1]))));
+                                                                              1]))));
                   source_data[idx] = source_data[idx] + temp -
                                      (source_data[idx] / p_src_amp) * temp;
                 }

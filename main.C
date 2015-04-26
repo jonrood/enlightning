@@ -119,8 +119,7 @@ int main(int argc, char *argv[])
                << restore_num << endl;
 
     // Create object for the input database.
-    boost::shared_ptr<tbox::InputDatabase>
-    input_db(new tbox::InputDatabase("input_db"));
+    boost::shared_ptr<tbox::InputDatabase>input_db(new tbox::InputDatabase("input_db"));
 
     // Parse and store the input file named "input_filename" for referencing.
     tbox::InputManager::getManager()->parseInputFile(input_filename,
@@ -328,7 +327,7 @@ int main(int argc, char *argv[])
 
     // Log inputs used in the simulation.
     tbox::plog << "Check input data and variables before simulation:" << endl <<
-    endl;
+      endl;
 
     tbox::plog << "Input database..." << endl << endl;
     input_db->printClassData(tbox::plog);
@@ -402,8 +401,11 @@ int main(int argc, char *argv[])
     // Save the time when the run started to calculate the elapsed run time.
     time(&begin);
 
-    if (!is_from_restart) tbox::pout << "Running simulation..." << endl;
-    else tbox::pout << "Restarting simulation..." << endl;
+    if (!is_from_restart) {
+      tbox::pout << "Running simulation..." << endl;
+    } else {
+      tbox::pout << "Restarting simulation..." << endl;
+    }
 
     // **************** MAIN LOOP START ****************
     while ((loop_time < enlightning_model->getEndTime()) &&
@@ -479,8 +481,10 @@ int main(int argc, char *argv[])
       }
 
       // Output microphone data if recording is requested.
-      if (enlightning_model->shouldRecordAudio()) enlightning_model->recordAudio(
+      if (enlightning_model->shouldRecordAudio()) {
+        enlightning_model->recordAudio(
           patch_hierarchy);
+      }
 
       // Regrid if necessary.
       if (((iteration_num % enlightning_model->getRegridStep()) == 0) &&
@@ -504,21 +508,22 @@ int main(int argc, char *argv[])
       // Print elapsed run time.
       int elapsed = (int)(check_t1 - begin);
 
-      if (elapsed <= 60) tbox::pout << "elapsed: " << elapsed << "s"
-                                    << endl;
-      else if ((elapsed > 60) &&
-               (elapsed <= 3600)) tbox::pout << "elapsed: " << elapsed / 60 << "m"
-                                             << elapsed % 60 <<
-        "s" << endl;
-      else if ((elapsed > 3600) && (elapsed <= 86400))
+      if (elapsed <= 60) {
+        tbox::pout << "elapsed: " << elapsed << "s"
+                   << endl;
+      } else if ((elapsed > 60) && (elapsed <= 3600)) {
+        tbox::pout << "elapsed: " << elapsed / 60 << "m"
+                   << elapsed % 60 << "s" << endl;
+      } else if ((elapsed > 3600) && (elapsed <= 86400)) {
         tbox::pout << "elapsed: " << elapsed / 3600 << "h"
                    << (elapsed % 3600) / 60 << "m"
                    << (elapsed % 3600) % 60 << "s" << endl;
-      else if (elapsed > 86400)
+      } else if (elapsed > 86400) {
         tbox::pout << "elapsed: " << elapsed / 86400 << "d"
                    << (elapsed % 86400) / 3600 << "h"
                    << ((elapsed % 86400) % 3600) / 60 << "m"
                    << ((elapsed % 86400) % 3600) % 60 << "s" << endl;
+      }
 
       // Guess the estimated run time left of the simulation.
       // Since the time to calculate each timestep varies widely,
@@ -560,30 +565,33 @@ int main(int argc, char *argv[])
         int seconds_left = (int)(((100.0 - progress)
                                   / time_window_percent) * ((double)(diff_t)));
 
-        if (seconds_left <= 60) tbox::pout << progress << "% done, "
-                                           << seconds_left << "s left" << endl;
-        else if ((seconds_left > 60) && (seconds_left <= 3600))
+        if (seconds_left <= 60) {
+          tbox::pout << progress << "% done, "
+                     << seconds_left << "s left" << endl;
+        } else if ((seconds_left > 60) && (seconds_left <= 3600)) {
           tbox::pout << progress << "% done, "
                      << seconds_left / 60 << "m"
                      << seconds_left % 60 << "s left" << endl;
-        else if ((seconds_left > 3600) && (seconds_left <= 86400))
+        } else if ((seconds_left > 3600) && (seconds_left <= 86400)) {
           tbox::pout << progress << "% done, "
                      << seconds_left / 3600 << "h"
                      << (seconds_left % 3600) / 60 << "m"
                      << (seconds_left % 3600) % 60 << "s left" << endl;
-        else if (seconds_left > 86400)
+        } else if (seconds_left > 86400) {
           tbox::pout << progress << "% done, "
                      << seconds_left / 86400 << "d"
                      << (seconds_left % 86400) / 3600 << "h"
                      << ((seconds_left % 86400) % 3600) / 60 << "m"
                      << ((seconds_left % 86400) % 3600) % 60
                      << "s" << endl;
+        }
       } else {
         tbox::pout << progress << "% done, estimating" << endl;
       }
       tbox::pout << resetiosflags(ios::fixed | ios::showpoint)
                  << setprecision(-1);
     }
+
     // ******************* MAIN LOOP END *******************
 
     // Output timer information after run is done.
@@ -603,7 +611,9 @@ int main(int argc, char *argv[])
     main_db.reset();
     input_db.reset();
 
-    if (enlightning_model) delete enlightning_model;
+    if (enlightning_model) {
+      delete enlightning_model;
+    }
   }
 
   // Shut down SAMRAI.

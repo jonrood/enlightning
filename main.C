@@ -58,10 +58,6 @@ using namespace std;
 
 #include <sys/stat.h>
 
-#ifdef _OPENMP
-# include <omp.h>
-#endif // ifdef _OPENMP
-
 using namespace SAMRAI;
 
 // Defines for source type.

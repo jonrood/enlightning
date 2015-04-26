@@ -336,7 +336,7 @@ int main(int argc, char *argv[])
     hier::VariableDatabase::getDatabase()->printClassData(tbox::plog);
     tbox::plog << endl << endl;
 
-    tbox::plog << "\nCheck Enlightning data... " << endl;
+    tbox::plog << "\nCheck Enlightning model data... " << endl;
     enlightning_model->printClassData(tbox::plog);
 
     // Initialize integrator.

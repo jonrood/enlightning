@@ -1105,6 +1105,7 @@ void enlightning::printClassData(ostream& os) const
   os << "c_v: " << p_c_v << endl;
   os << "R_tilde: " << p_R_tilde << endl;
   os << "M: " << p_M << endl;
+  os << endl << endl;
 }
 
 // Use SAMRAI to parse enlightning section of the input file.

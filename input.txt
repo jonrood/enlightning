@@ -114,7 +114,6 @@ PatchHierarchy {
    largest_patch_size {
       level_0          = 64 , 64
       level_1          = 128 , 128
-      level_1          = 128 , 128
    }
    smallest_patch_size {
       level_0          = 16 , 16

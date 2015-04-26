@@ -326,8 +326,8 @@ int main(int argc, char *argv[])
     enlightning_model->registerVisItDataWriter(visit_data_writer);
 
     // Log inputs used in the simulation.
-    tbox::plog << "Check input data and variables before simulation:" << endl <<
-      endl;
+    tbox::plog << "Check input data and variables before simulation:"
+	       << endl << endl;
 
     tbox::plog << "Input database..." << endl << endl;
     input_db->printClassData(tbox::plog);
@@ -335,6 +335,9 @@ int main(int argc, char *argv[])
     tbox::plog << "\nVariable database..." << endl;
     hier::VariableDatabase::getDatabase()->printClassData(tbox::plog);
     tbox::plog << endl << endl;
+
+    tbox::plog << "\nCheck Enlightning data... " << endl;
+    enlightning_model->printClassData(tbox::plog);
 
     // Initialize integrator.
     mol_integrator->initializeIntegrator(gridding_algorithm);

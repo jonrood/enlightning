@@ -674,36 +674,25 @@ void enlightning::setAbsorbingBoundaryConditions(hier::Patch& patch) const
     // Apply envelope to absorb waves at the left boundary.
     if (p_bc_type_L_int == ABSORB) {
       xc[0] = patchXLo[0] + dx[0] * (0.5);
-      tmp   =
-        -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(xc[0] - gridXLo[0])) + 1;
+      tmp = -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(xc[0] - gridXLo[0])) + 1;
 
       for (int j = ifirst(1); j <= ilast(1); j++) {
         xc[1] = patchXLo[1] + dx[1] * ((double)(j - ifirst(1)) + 0.5);
 
         for (int i = ifirst(0); (fabs(1.0 - tmp) > ep) && (i <= ilast(0)); i++) {
           xc[0] = patchXLo[0] + dx[0] * ((double)(i - ifirst(0)) + 0.5);
-          tmp   =
-            -exp(-log(2.0) / SQUARE(p_bc_absorb_width) *
-                 SQUARE(xc[0] - gridXLo[0])) + 1;
-          idx2d =
-            (j - ifirst(1) + ghost_cells(1)) * patch_width +
-            (i - ifirst(0) + ghost_cells(0));
-          pressure_data[idx2d] = (pressure_data[idx2d] - p_p0) * tmp +
-                                 p_p0;
-          temperature_data[idx2d] = (temperature_data[idx2d] - p_T0) *
-                                    tmp + p_T0;
+          tmp = -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(xc[0] - gridXLo[0])) + 1;
+          idx2d = (j - ifirst(1) + ghost_cells(1)) * patch_width +
+                  (i - ifirst(0) + ghost_cells(0));
+          pressure_data[idx2d] = (pressure_data[idx2d] - p_p0) * tmp + p_p0;
+          temperature_data[idx2d] = (temperature_data[idx2d] - p_T0) * tmp + p_T0;
           w_n_data[0 * patch_area + idx2d] =
             (w_n_data[0 * patch_area + idx2d] - p_rho0) * tmp + p_rho0;
-          w_n_data[1 * patch_area + idx2d] = w_n_data[1 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[2 * patch_area + idx2d] = w_n_data[2 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[3 * patch_area + idx2d] = w_n_data[3 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[4 * patch_area + idx2d] =
-            (w_n_data[4 * patch_area + idx2d] - p_T0 * p_rho0) * tmp + p_T0 *
-            p_rho0;
-
+          w_n_data[1 * patch_area + idx2d] = w_n_data[1 * patch_area + idx2d] * tmp;
+          w_n_data[2 * patch_area + idx2d] = w_n_data[2 * patch_area + idx2d] * tmp;
+          w_n_data[3 * patch_area + idx2d] = w_n_data[3 * patch_area + idx2d] * tmp;
+          w_n_data[4 * patch_area + idx2d] = (w_n_data[4 * patch_area + idx2d] 
+			                   - p_T0 * p_rho0) * tmp + p_T0 * p_rho0;
           // w_n_data[5*patch_area + idx2d] =
           // (w_n_data[5*patch_area + idx2d]-p_T0*p_rho0)*tmp+p_T0*p_rho0;
         }
@@ -714,37 +703,25 @@ void enlightning::setAbsorbingBoundaryConditions(hier::Patch& patch) const
     // Apply envelope to absorb waves at the right boundary.
     if (p_bc_type_R_int == ABSORB) {
       xc[0] = patchXLo[0] + dx[0] * ((double)(ilast(0) - ifirst(0)) + 0.5);
-      tmp   =
-        -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(gridXHi[0] - xc[0])) +
-        1;
+      tmp = -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(gridXHi[0] - xc[0])) + 1;
 
       for (int j = ifirst(1); j <= ilast(1); j++) {
         xc[1] = patchXLo[1] + dx[1] * ((double)(j - ifirst(1)) + 0.5);
 
         for (int i = ilast(0); (fabs(1.0 - tmp) > ep) && (i >= ifirst(0)); i--) {
           xc[0] = patchXLo[0] + dx[0] * ((double)(i - ifirst(0)) + 0.5);
-          tmp   =
-            -exp(-log(2.0) / SQUARE(p_bc_absorb_width) *
-                 SQUARE(gridXHi[0] - xc[0])) + 1;
-          idx2d =
-            (j - ifirst(1) + ghost_cells(1)) * patch_width +
-            (i - ifirst(0) + ghost_cells(0));
-          pressure_data[idx2d] = (pressure_data[idx2d] - p_p0) * tmp +
-                                 p_p0;
-          temperature_data[idx2d] = (temperature_data[idx2d] - p_T0) *
-                                    tmp + p_T0;
+          tmp = -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(gridXHi[0] - xc[0])) + 1;
+          idx2d = (j - ifirst(1) + ghost_cells(1)) * patch_width +
+                  (i - ifirst(0) + ghost_cells(0));
+          pressure_data[idx2d] = (pressure_data[idx2d] - p_p0) * tmp + p_p0;
+          temperature_data[idx2d] = (temperature_data[idx2d] - p_T0) * tmp + p_T0;
           w_n_data[0 * patch_area + idx2d] =
             (w_n_data[0 * patch_area + idx2d] - p_rho0) * tmp + p_rho0;
-          w_n_data[1 * patch_area + idx2d] = w_n_data[1 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[2 * patch_area + idx2d] = w_n_data[2 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[3 * patch_area + idx2d] = w_n_data[3 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[4 * patch_area + idx2d] =
-            (w_n_data[4 * patch_area + idx2d] - p_T0 * p_rho0) * tmp + p_T0 *
-            p_rho0;
-
+          w_n_data[1 * patch_area + idx2d] = w_n_data[1 * patch_area + idx2d] * tmp;
+          w_n_data[2 * patch_area + idx2d] = w_n_data[2 * patch_area + idx2d] * tmp;
+          w_n_data[3 * patch_area + idx2d] = w_n_data[3 * patch_area + idx2d] * tmp;
+          w_n_data[4 * patch_area + idx2d] = (w_n_data[4 * patch_area + idx2d] 
+			                   - p_T0 * p_rho0) * tmp + p_T0 * p_rho0;
           // w_n_data[5*patch_area + idx2d] =
           // (w_n_data[5*patch_area + idx2d]-p_T0*p_rho0)*tmp+p_T0*p_rho0;
         }
@@ -755,37 +732,24 @@ void enlightning::setAbsorbingBoundaryConditions(hier::Patch& patch) const
     // Apply envelope to absorb waves at the bottom boundary.
     if (p_bc_type_B_int == ABSORB) {
       xc[1] = patchXLo[1] + dx[1] * (0.5);
-      tmp   =
-        -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(xc[1] - gridXLo[1])) +
-        1;
+      tmp = -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(xc[1] - gridXLo[1])) + 1;
 
       for (int j = ifirst(1); (fabs(1.0 - tmp) > ep) && (j <= ilast(1)); j++) {
         xc[1] = patchXLo[1] + dx[1] * ((double)(j - ifirst(1)) + 0.5);
-        tmp   =
-          -exp(-log(2.0) / SQUARE(p_bc_absorb_width) *
-               SQUARE(xc[1] - gridXLo[1])) +
-          1;
+        tmp = -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(xc[1] - gridXLo[1])) + 1;
 
         for (int i = ifirst(0); i <= ilast(0); i++) {
-          idx2d =
-            (j - ifirst(1) + ghost_cells(1)) * patch_width +
-            (i - ifirst(0) + ghost_cells(0));
-          pressure_data[idx2d] = (pressure_data[idx2d] - p_p0) * tmp +
-                                 p_p0;
-          temperature_data[idx2d] = (temperature_data[idx2d] - p_T0) *
-                                    tmp + p_T0;
+          idx2d = (j - ifirst(1) + ghost_cells(1)) * patch_width +
+                  (i - ifirst(0) + ghost_cells(0));
+          pressure_data[idx2d] = (pressure_data[idx2d] - p_p0) * tmp + p_p0;
+          temperature_data[idx2d] = (temperature_data[idx2d] - p_T0) * tmp + p_T0;
           w_n_data[0 * patch_area + idx2d] =
             (w_n_data[0 * patch_area + idx2d] - p_rho0) * tmp + p_rho0;
-          w_n_data[1 * patch_area + idx2d] = w_n_data[1 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[2 * patch_area + idx2d] = w_n_data[2 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[3 * patch_area + idx2d] = w_n_data[3 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[4 * patch_area + idx2d] =
-            (w_n_data[4 * patch_area + idx2d] - p_T0 * p_rho0) * tmp + p_T0 *
-            p_rho0;
-
+          w_n_data[1 * patch_area + idx2d] = w_n_data[1 * patch_area + idx2d] * tmp;
+          w_n_data[2 * patch_area + idx2d] = w_n_data[2 * patch_area + idx2d] * tmp;
+          w_n_data[3 * patch_area + idx2d] = w_n_data[3 * patch_area + idx2d] * tmp;
+          w_n_data[4 * patch_area + idx2d] = (w_n_data[4 * patch_area + idx2d]
+			                   - p_T0 * p_rho0) * tmp + p_T0 * p_rho0;
           // w_n_data[5*patch_area + idx2d] =
           // (w_n_data[5*patch_area + idx2d]-p_T0*p_rho0)*tmp+p_T0*p_rho0;
         }
@@ -795,37 +759,24 @@ void enlightning::setAbsorbingBoundaryConditions(hier::Patch& patch) const
     // Apply envelope to absorb waves at the top boundary.
     if (p_bc_type_T_int == ABSORB) {
       xc[1] = patchXLo[1] + dx[1] * ((double)(ilast(1) - ifirst(1)) + 0.5);
-      tmp   =
-        -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(gridXHi[1] - xc[1])) +
-        1;
+      tmp = -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(gridXHi[1] - xc[1])) + 1;
 
       for (int j = ilast(1); (fabs(1.0 - tmp) > ep) && (j >= ifirst(1)); j--) {
         xc[1] = patchXLo[1] + dx[1] * ((double)(j - ifirst(1)) + 0.5);
-        tmp   =
-          -exp(-log(2.0) / SQUARE(p_bc_absorb_width) *
-               SQUARE(gridXHi[1] - xc[1])) +
-          1;
+        tmp = -exp(-log(2.0) / SQUARE(p_bc_absorb_width) * SQUARE(gridXHi[1] - xc[1])) + 1;
 
         for (int i = ifirst(0); i <= ilast(0); i++) {
-          idx2d =
-            (j - ifirst(1) + ghost_cells(1)) * patch_width +
-            (i - ifirst(0) + ghost_cells(0));
-          pressure_data[idx2d] = (pressure_data[idx2d] - p_p0) * tmp +
-                                 p_p0;
-          temperature_data[idx2d] = (temperature_data[idx2d] - p_T0) *
-                                    tmp + p_T0;
+          idx2d = (j - ifirst(1) + ghost_cells(1)) * patch_width +
+                  (i - ifirst(0) + ghost_cells(0));
+          pressure_data[idx2d] = (pressure_data[idx2d] - p_p0) * tmp + p_p0;
+          temperature_data[idx2d] = (temperature_data[idx2d] - p_T0) * tmp + p_T0;
           w_n_data[0 * patch_area + idx2d] =
             (w_n_data[0 * patch_area + idx2d] - p_rho0) * tmp + p_rho0;
-          w_n_data[1 * patch_area + idx2d] = w_n_data[1 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[2 * patch_area + idx2d] = w_n_data[2 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[3 * patch_area + idx2d] = w_n_data[3 * patch_area + idx2d] *
-                                             tmp;
-          w_n_data[4 * patch_area + idx2d] =
-            (w_n_data[4 * patch_area + idx2d] - p_T0 * p_rho0) * tmp + p_T0 *
-            p_rho0;
-
+          w_n_data[1 * patch_area + idx2d] = w_n_data[1 * patch_area + idx2d] * tmp;
+          w_n_data[2 * patch_area + idx2d] = w_n_data[2 * patch_area + idx2d] * tmp;
+          w_n_data[3 * patch_area + idx2d] = w_n_data[3 * patch_area + idx2d] * tmp;
+          w_n_data[4 * patch_area + idx2d] = (w_n_data[4 * patch_area + idx2d]
+			                   - p_T0 * p_rho0) * tmp + p_T0 * p_rho0;
           // w_n_data[5*patch_area + idx2d] =
           // (w_n_data[5*patch_area + idx2d]-p_T0*p_rho0)*tmp+p_T0*p_rho0;
         }
@@ -1907,8 +1858,6 @@ void enlightning::getFromInput(boost::shared_ptr<tbox::Database>db)
 // simulation.
 void enlightning::putToRestart(const boost::shared_ptr<tbox::Database>& db) const
 {
-  TBOX_ASSERT(db);
-
   db->putIntegerArray("p_nghosts",     &p_nghosts[0],     p_dim.getValue());
   db->putIntegerArray("p_zero_ghosts", &p_zero_ghosts[0], p_dim.getValue());
 
@@ -2189,7 +2138,7 @@ int enlightning::shouldAddSource()
 // Draw source on patch (point, sine, or lightning channel pulse, or driven
 // point source).
 void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
-                            double                                 dt)
+                            double dt)
 {
   t_addsource->start();
   const int num_levels = patch_hier->getNumberOfLevels();
@@ -2237,9 +2186,8 @@ void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
               x0    = xc[0] - p_src_pos[0];
 
               idx              = (j - ifirst(1)) * patch_width + (i - ifirst(0));
-              source_data[idx] = p_src_amp
-                                 * exp(-log(2.0) / SQUARE(p_src_spread) *
-                                       (x0 * x0 + x1 * x1));
+              source_data[idx] = p_src_amp * exp(-log(2.0) / SQUARE(p_src_spread) *
+                                 (x0 * x0 + x1 * x1));
             }
           }
         }
@@ -2256,12 +2204,8 @@ void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
               x0    = xc[0] - p_src_pos[0];
 
               idx              = (j - ifirst(1)) * patch_width + (i - ifirst(0));
-              source_data[idx] = p_src_amp
-                                 * exp(-log(2.0) / SQUARE(p_src_spread) *
-                                       SQUARE((x0)
-                                              -
-                                              p_src_sine_amp *
-                                              sin(p_src_sine_freq * (x1))));
+              source_data[idx] = p_src_amp * exp(-log(2.0) / SQUARE(p_src_spread) *
+                                 SQUARE((x0) - p_src_sine_amp * sin(p_src_sine_freq * (x1))));
             }
           }
         }
@@ -2271,8 +2215,8 @@ void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
         if (p_src_type_int == LIGHTNING) {
           for (int k = 0; k < p_lightning_input_line_count; k++) {
             int orientation = 0;
-            double theta    =
-              -atan((p_lightning_coords[k * 4 + 3] - p_lightning_coords[k * 4 + 1])
+            double theta    = -atan((p_lightning_coords[k * 4 + 3]
+		    - p_lightning_coords[k * 4 + 1])
                     / (p_lightning_coords[k * 4 + 2] -
                        p_lightning_coords[k * 4 + 0]));
 
@@ -2308,14 +2252,8 @@ void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
                 if (((orientation == 1) && (xc[1] >= line0))
                     || ((orientation == 2) && (xc[1] <= line0))) {
                   double temp = p_src_amp * exp(-log(2.0) / SQUARE(p_src_spread)
-                                                * (SQUARE(xc[0] -
-                                                          p_lightning_coords[k *
-                                                                             4 +
-                                                                             0])
-                                                   + SQUARE(xc[1] -
-                                                            p_lightning_coords[k *
-                                                                               4 +
-                                                                               1])));
+                         * (SQUARE(xc[0] - p_lightning_coords[k * 4 + 0])
+                         + SQUARE(xc[1] - p_lightning_coords[k * 4 + 1])));
                   source_data[idx] = source_data[idx] + temp -
                                      (source_data[idx] / p_src_amp) * temp;
                 }
@@ -2323,14 +2261,8 @@ void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
                 if (((orientation == 1) && (xc[1] <= line1))
                     || ((orientation == 2) && (xc[1] >= line1))) {
                   double temp = p_src_amp * exp(-log(2.0) / SQUARE(p_src_spread)
-                                                * (SQUARE(xc[0] -
-                                                          p_lightning_coords[k *
-                                                                             4 +
-                                                                             2])
-                                                   + SQUARE(xc[1] -
-                                                            p_lightning_coords[k *
-                                                                               4 +
-                                                                               3])));
+                         * (SQUARE(xc[0] - p_lightning_coords[k * 4 + 2])
+                         + SQUARE(xc[1] - p_lightning_coords[k * 4 + 3])));
                   source_data[idx] = source_data[idx] + temp -
                                      (source_data[idx] / p_src_amp) * temp;
                 }
@@ -2339,17 +2271,8 @@ void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
                     || ((orientation == 2) && (xc[1] > line0) &&
                         (xc[1] < line1))) {
                   double temp = p_src_amp * exp(-log(2.0) / SQUARE(p_src_spread)
-                                                * (SQUARE(sin(theta) *
-                                                          (xc[0] -
-                                                           p_lightning_coords[k *
-                                                                              4 +
-                                                                              0])
-                                                          + cos(
-                                                            theta) *
-                                                          (xc[1] -
-                                                           p_lightning_coords[k *
-                                                                              4 +
-                                                                              1]))));
+                         * (SQUARE(sin(theta) * (xc[0] - p_lightning_coords[k * 4 + 0])
+                         + cos( theta) * (xc[1] - p_lightning_coords[k * 4 + 1]))));
                   source_data[idx] = source_data[idx] + temp -
                                      (source_data[idx] / p_src_amp) * temp;
                 }
@@ -2369,12 +2292,9 @@ void enlightning::addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
               x0    = xc[0] - p_src_pos[0];
 
               idx              = (j - ifirst(1)) * patch_width + (i - ifirst(0));
-              source_data[idx] = p_src_amp
-                                 * exp(-log(2.0) / SQUARE(p_src_spread) *
-                                       (x0 * x0 + x1 * x1))
-                                 * sin(p_src_omega *
-                                       (p_iteration_number + 1 -
-                                        p_src_pulse_times[0]) * dt);
+              source_data[idx] = p_src_amp * exp(-log(2.0) / SQUARE(p_src_spread) *
+                                 (x0 * x0 + x1 * x1)) * sin(p_src_omega *
+                                 (p_iteration_number + 1 - p_src_pulse_times[0]) * dt);
             }
           }
         }

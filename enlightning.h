@@ -74,8 +74,7 @@ public:
   computeStableDtOnPatch(hier::Patch& patch,
                          const double time) const;
 
-  void
-                  putToRestart(const boost::shared_ptr<tbox::Database>& db) const;
+  void putToRestart(const boost::shared_ptr<tbox::Database>& db) const;
 
   hier::IntVector getRefineOpStencilWidth(const tbox::Dimension& dim) const {
     return hier::IntVector::getOne(dim);
@@ -218,7 +217,7 @@ public:
 
   void
   addSource(boost::shared_ptr<hier::PatchHierarchy>patch_hier,
-            double                                 dt);
+            double dt);
 
   void
   setSourceToZero(boost::shared_ptr<hier::PatchHierarchy>patch_hier);

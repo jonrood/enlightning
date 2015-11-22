@@ -19,7 +19,7 @@ c ===========================================================================
 
 define(NDIM,2)dnl
 define(REAL,`double precision')dnl
-include(SAMRAI_FORTDIR/pdat_m4arrdim2d.i)dnl
+include(PDAT_FORTDIR/pdat_m4arrdim2d.i)dnl
 
 c This function calculates the RHS using a fifth-order WENO scheme
 c using the alpha value from the input file for the flux-splitting.

@@ -19,7 +19,7 @@ c ===========================================================================
 
 define(NDIM,2)dnl
 define(REAL,`double precision')dnl
-include(SAMRAI_FORTDIR/pdat_m4arrdim2d.i)dnl
+include(PDAT_FORTDIR/pdat_m4arrdim2d.i)dnl
 
 c This function calculates the smoothness or gradient
 c in order to tag cells that require refinement.

@@ -1,29 +1,29 @@
-OSX 10.10 general install notes (NOT EXACT):
+OSX 10.11 general install notes (NOT NECESSARILY EXACT):
 
-Install gcc (4.9.2) and gfortran (4.9.2) using Homebrew.
+Install gcc (5.2.0) and gfortran (5.2.0) using Homebrew.
     brew install gcc
-    brew install gfortran
 
-Install hdf5 (1.8.14) and boost (1.57.0) using Homebrew.
-    brew install homebrew/science/hdf5 --with-mpi
+Install hdf5 (1.8.16) and boost (1.59.0) using Homebrew.
+    brew install homebrew/science/hdf5 --with-fortran --with-mpi --with-check
     brew install boost --with-mpi
 
-Install openmpi (1.8.4) using Homebrew.
-    brew install openmpi
+Install openmpi (3.1.4) using Homebrew.
+    brew install mpich
 
 Install SAMRAI.
-    mkdir ~/SAMRAI-v3.9.1
-    mv ~/Downloads/SAMRAI-v3.9.1.tar.gz ~/SAMRAI-v3.9.1/
-    cd ~/SAMRAI-v3.9.1/
-    tar xf SAMRAI-v3.9.1.tar.gz
+    mkdir ~/SAMRAI-v3.10.0
+    mv ~/Downloads/SAMRAI-v3.10.0.tar.gz ~/SAMRAI-v3.10.0/
+    cd ~/SAMRAI-v3.10.0/
+    tar xf SAMRAI-v3.10.0.tar.gz
     mkdir build
     cd build
-    ../SAMRAI/configure --prefix=~/SAMRAI-v3.9.1/install --with-hdf5=/usr/local --with-CC=mpicc --with-CXX=mpicxx --with-F77=mpif77 --with-parallel-run-bin=mpirun --with-zlib --without-petsc --enable-opt=-O3 --disable-debug --with-boost=/usr/local
-    make library -j8
+    ../SAMRAI/configure --prefix=~/SAMRAI-v3.10.0/install --with-hdf5=/usr/local --with-CC=mpicc --with-CXX=mpicxx --with-F77=mpif77 --with-parallel-run-bin=mpirun --with-zlib --without-petsc --enable-opt=-O3 --disable-debug --with-boost
+    make library
+    make install
 
 Fix an error in SAMRAI's Fortran location.
-    Change the line "INCLUDE_SAM   = $(SAMRAI)/source" in ~/SAMRAI-v3.9.1/install/config/Makefile.config to be "INCLUDE_SAM   = $(SAMRAI)/include".
+    Change the line "INCLUDE_SAM   = $(SAMRAI)/source" in ~/SAMRAI-v3.10.0/install/config/Makefile.config to be "INCLUDE_SAM   = $(SAMRAI)/include".
 
 Install Enlightning.
-    Change the SAMRAI variable in the Enlightning makefile to the location of SAMRAI source, i.e. "~/SAMRAI-v3.9.1/install"
-    make
+    Change the SAMRAI variable in the Enlightning makefile to the location of SAMRAI source, i.e. "~/SAMRAI-v3.10.0/install"
+    Then issue the command "make" in the enlightning directory.

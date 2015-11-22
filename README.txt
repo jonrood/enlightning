@@ -1,4 +1,4 @@
-Enlightning is a program which uses the SAMRAI adaptive mesh refinement library (v3.1.0-beta at the time of writing, but recently update to v3.9.1) developed by Lawrence Livermore National Laboratory for simulation of the nonlinear acoustics of thunder created by lightning strikes. This software accompanies the dissertation "Numerical Simulation of the Acoustical Propagation of Thunder" by Jon Rood, 2015.
+Enlightning is a program which uses the SAMRAI adaptive mesh refinement library (v3.1.0-beta at the time of writing, but recently updated to use v3.10.0) developed by Lawrence Livermore National Laboratory for simulation of the nonlinear acoustics of thunder created by lightning strikes. This software accompanies the dissertation "Numerical Simulation of the Acoustical Propagation of Thunder" by Jon Rood, 2012.
 
 Files:
 

@@ -104,6 +104,6 @@ Enlightning is a program which uses the SAMRAI adaptive mesh refinement library 
 
    * `lightning_strike.png` - Example of a lightning channel simulation.
 
-`paper/
+`paper/`
 
    * `jr_dissertation` - Dissertation detailing the simulation.

@@ -22,6 +22,8 @@ Enlightning is a program which uses the SAMRAI adaptive mesh refinement library 
 
 `MOREINFO.md` - This file.
 
+`INSTALL.md` - Instructions on installing Enlightning on Mac or Linux.
+
 `enlightning.record/`
 
    * `convert_all_mics.sh` - Script for running the mic converter program on all microphone data files in the directory.

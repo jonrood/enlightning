@@ -4,11 +4,11 @@ Simulation software for numerically solving the Navier-Stokes equations using a 
 
 ## Notes
 
-Refer to [README.txt](README.txt) and [INSTALL.txt](INSTALL.txt) for notes and instructions on installation. Also refer to the [paper](paper/jr_dissertation.pdf) on the simulation, the [Matlab prototype](matlab/hybrid.m) of the model and the [OpenCL prototype](opencl/main.c) of the model in the project directory.
+Refer to [MOREINFO.md](MOREINFO.md) and [INSTALL.md](INSTALL.md) for notes on the files, and instructions on installation. Also refer to the [paper](paper/jr_dissertation.pdf) on the simulation, the [Matlab prototype](matlab/hybrid.m) of the model and the [OpenCL prototype](opencl/main.c) of the model in the project directory.
 
-Enlightning relies upon the [zlib](http://www.zlib.net/), [HDF5](http://www.hdfgroup.org/HDF5/), MPI ([Open MPI](http://www.open-mpi.org) or [MPICH](http://www.mpich.org)), and [SAMRAI](https://computation-rnd.llnl.gov/SAMRAI/)(v3.10.0) software libraries.
+Enlightning relies upon the [zlib](http://www.zlib.net/), [HDF5](http://www.hdfgroup.org/HDF5/), MPI ([Open MPI](http://www.open-mpi.org) or [MPICH](http://www.mpich.org)), and [SAMRAI](http://computation.llnl.gov/projects/samrai)(v3.10.0) software libraries.
 
-Use [VisIt](https://wci.llnl.gov/simulation/computer-codes/visit/) for plotting the HDF5 output.
+Use [VisIt](https://wci.llnl.gov/simulation/computer-codes/visit) for plotting the HDF5 output.
 
 ## Example Simulation of a Mach Reflection
 Output from example problem in [input.txt](input.txt):

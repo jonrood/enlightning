@@ -40,7 +40,7 @@ Enlightning relies upon the SAMRAI software library so you will need to install 
 
 5. You may need to fix an error in SAMRAI's Fortran location:
 
-   Change the line `INCLUDE_SAM   = $(SAMRAI)/source" in ~/SAMRAI-v3.10.0/install/config/Makefile.config to be "INCLUDE_SAM   = $(SAMRAI)/include`.
+   Change the line `INCLUDE_SAM   = $(SAMRAI)/source` in `~/SAMRAI-v3.10.0/install/config/Makefile.config` to be `INCLUDE_SAM   = $(SAMRAI)/include`.
 
 6. Install Enlightning:
 

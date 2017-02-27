@@ -1,5 +1,5 @@
 % ===========================================================================
-% Copyright (C) 2015 Jon Rood.
+% Copyright (C) 2017 Jon Rood.
 %
 % This file is part of Enlightning source code.
 % 
